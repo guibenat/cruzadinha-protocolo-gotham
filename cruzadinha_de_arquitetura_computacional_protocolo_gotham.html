@@ -3,49 +3,50 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cruzadinha de Arquitetura Computacional // Protocolo Gotham</title>
+  <title>Protocolo Gotham // Arquitetura Computacional & Portas Lógicas</title>
 
-  <!-- Fontes temáticas: Oswald (títulos cinematográficos condensados), JetBrains Mono (terminal forense) e Inter (leitura das pistas) -->
+  <!-- Fontes temáticas: Oswald & Rajdhani (condensadas táticas) + Courier Prime (terminal forense) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700;800&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Oswald:wght@500;600;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet" />
 
   <style>
     /* ==========================================================================
-       VARIÁVEIS DE TEMA — ESTÉTICA THE BATMAN (2022) NOIR & TERMINAL FORENSE
+       1. VARIÁVEIS DE TEMA — ESTÉTICA NOIR THE BATMAN (2022)
        ========================================================================== */
     :root {
-      --bg-void: #070709;
-      --bg-panel: #0d0e12;
-      --bg-surface: #13161d;
-      --bg-surface-hover: #1a1e28;
-      --bg-cell-void: #050507;
-      --bg-cell-active: #151821;
+      --bg-void: #07080a;
+      --bg-panel: #0e1015;
+      --bg-surface: #14171f;
+      --bg-surface-hover: #1b202b;
+      --bg-cell-void: #050608;
 
       --crimson-primary: #c8102e;
       --crimson-bright: #e61938;
       --crimson-dark: #6b0818;
       --crimson-glow: rgba(200, 16, 46, 0.38);
-      --crimson-tint: rgba(200, 16, 46, 0.16);
+      --crimson-tint: rgba(200, 16, 46, 0.15);
 
       --terminal-green: #1ed760;
-      --terminal-green-glow: rgba(30, 215, 96, 0.35);
-      --terminal-green-tint: rgba(30, 215, 96, 0.16);
+      --terminal-green-glow: rgba(30, 215, 96, 0.36);
+      --terminal-green-tint: rgba(30, 215, 96, 0.14);
 
-      --text-primary: #eceef2;
-      --text-secondary: #9aa1b2;
-      --text-muted: #5d6475;
+      --amber-signal: #f59e0b;
 
-      --border-subtle: #222632;
-      --border-strong: #323849;
+      --text-primary: #eef0f5;
+      --text-secondary: #9ca3b5;
+      --text-muted: #646c7f;
+
+      --border-subtle: #212633;
+      --border-strong: #32394b;
 
       --font-display: 'Oswald', sans-serif;
-      --font-mono: 'JetBrains Mono', monospace;
-      --font-sans: 'Inter', sans-serif;
+      --font-tactical: 'Rajdhani', sans-serif;
+      --font-mono: 'Courier Prime', monospace;
     }
 
     /* ==========================================================================
-       RESET E BASE GLOBAL
+       2. RESET E BASE GLOBAL
        ========================================================================== */
     *, *::before, *::after {
       box-sizing: border-box;
@@ -60,15 +61,16 @@
       overflow-x: hidden;
       background-color: var(--bg-void);
       color: var(--text-primary);
-      font-family: var(--font-sans);
+      font-family: var(--font-tactical);
+      font-size: 16px;
       -webkit-font-smoothing: antialiased;
     }
 
     body {
       background-image:
-        radial-gradient(circle at 50% 0%, rgba(200, 16, 46, 0.14) 0%, transparent 55%),
-        radial-gradient(circle at 85% 90%, rgba(200, 16, 46, 0.08) 0%, transparent 45%),
-        linear-gradient(180deg, #070709 0%, #0a0b0f 100%);
+        radial-gradient(circle at 50% 0%, rgba(200, 16, 46, 0.15) 0%, transparent 52%),
+        radial-gradient(circle at 85% 92%, rgba(200, 16, 46, 0.08) 0%, transparent 45%),
+        linear-gradient(180deg, #07080a 0%, #0b0d12 100%);
       position: relative;
     }
 
@@ -80,17 +82,17 @@
       height: 100%;
       pointer-events: none;
       z-index: 1;
-      opacity: 0.42;
+      opacity: 0.45;
     }
 
-    /* Vinheta cinematográfica e textura sutil de monitor CRT/Dossiê */
-    .noir-vignette {
+    /* Vinheta noir e linhas sutis de monitor forense */
+    .noir-overlay {
       position: fixed;
       inset: 0;
       pointer-events: none;
       z-index: 2;
       background:
-        radial-gradient(circle at center, transparent 58%, rgba(0, 0, 0, 0.78) 100%),
+        radial-gradient(circle at center, transparent 58%, rgba(0, 0, 0, 0.8) 100%),
         repeating-linear-gradient(
           0deg,
           rgba(255, 255, 255, 0.012) 0px,
@@ -101,438 +103,561 @@
     }
 
     /* ==========================================================================
-       TELA INICIAL (SPLASH SCREEN — PROTOCOLO GOTHAM)
+       3. NAVEGAÇÃO SUPERIOR FIXA
        ========================================================================== */
-    #splash-screen {
-      position: fixed;
-      inset: 0;
-      z-index: 100;
+    .top-navbar {
+      position: sticky;
+      top: 0;
+      z-index: 60;
+      background: rgba(7, 8, 10, 0.94);
+      border-bottom: 1px solid var(--border-subtle);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(10px);
+    }
+
+    .navbar-inner {
+      max-width: 1420px;
+      margin: 0 auto;
+      padding: 0.65rem clamp(0.75rem, 2vw, 1.5rem);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      background: none;
+      border: none;
+      color: var(--text-primary);
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .nav-bat-svg {
+      width: 42px;
+      height: auto;
+      flex-shrink: 0;
+      filter: drop-shadow(0 0 8px rgba(200, 16, 46, 0.55));
+    }
+
+    .nav-brand-text strong {
+      display: block;
+      font-family: var(--font-display);
+      font-size: 1.08rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #ffffff;
+      line-height: 1.05;
+    }
+
+    .nav-brand-text span {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--crimson-bright);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .nav-links {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .nav-tab-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.48rem 0.85rem;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      background: var(--bg-panel);
+      border: 1px solid var(--border-subtle);
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+
+    .nav-tab-btn:hover {
+      color: #ffffff;
+      border-color: var(--border-strong);
+      background: var(--bg-surface);
+    }
+
+    .nav-tab-btn.active {
+      color: #ffffff;
+      background: rgba(200, 16, 46, 0.2);
+      border-color: var(--crimson-bright);
+      box-shadow: 0 0 14px rgba(200, 16, 46, 0.28);
+    }
+
+    .nav-sound-btn {
+      padding: 0.46rem 0.65rem;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      background: var(--bg-panel);
+      border: 1px solid var(--border-subtle);
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .nav-sound-btn:hover {
+      border-color: var(--border-strong);
+      color: #ffffff;
+    }
+
+    /* ==========================================================================
+       4. GERENCIAMENTO DE PÁGINAS (SPA) E CONTAINERS COMUNS
+       ========================================================================== */
+    .page-view {
+      display: none;
+      position: relative;
+      z-index: 10;
+      max-width: 1420px;
+      margin: 0 auto;
+      padding: 1.25rem clamp(0.75rem, 2vw, 1.5rem) 3rem;
+      animation: pageFadeIn 0.3s ease;
+    }
+
+    .page-view.active-view {
+      display: block;
+    }
+
+    @keyframes pageFadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Cartão Dossiê Tático Reutilizável */
+    .tactical-card {
+      background: rgba(14, 16, 21, 0.94);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      box-shadow: 0 14px 36px rgba(0, 0, 0, 0.65);
+    }
+
+    /* ==========================================================================
+       5. PÁGINA 0: TELA HOME (DOSSIÊ CENTRAL)
+       ========================================================================== */
+    .home-hero-wrapper {
+      min-height: calc(100vh - 95px);
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 1.25rem;
-      background:
-        radial-gradient(circle at 50% 35%, rgba(200, 16, 46, 0.22) 0%, rgba(7, 7, 9, 0.96) 62%, #050507 100%);
-      backdrop-filter: blur(6px);
-      transition: opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1), transform 0.65s cubic-bezier(0.22, 1, 0.36, 1), visibility 0.65s;
-      overflow-y: auto;
+      padding: 1rem 0;
     }
 
-    #splash-screen.hidden-splash {
-      opacity: 0;
-      transform: scale(1.03);
-      visibility: hidden;
-      pointer-events: none;
-    }
-
-    .dossier-card {
+    .home-dossier {
       position: relative;
       width: 100%;
-      max-width: 680px;
-      background: linear-gradient(180deg, rgba(16, 18, 24, 0.95) 0%, rgba(10, 11, 15, 0.98) 100%);
+      max-width: 960px;
+      background: linear-gradient(180deg, rgba(16, 18, 25, 0.96) 0%, rgba(10, 11, 15, 0.98) 100%);
       border: 1px solid rgba(200, 16, 46, 0.45);
       border-radius: 10px;
-      padding: clamp(1.5rem, 4vw, 2.75rem);
+      padding: clamp(1.5rem, 4vw, 3rem);
       box-shadow:
-        0 25px 70px rgba(0, 0, 0, 0.85),
-        0 0 40px rgba(200, 16, 46, 0.16),
+        0 25px 70px rgba(0, 0, 0, 0.88),
+        0 0 45px rgba(200, 16, 46, 0.16),
         inset 0 1px 0 rgba(255, 255, 255, 0.06);
       text-align: center;
-      z-index: 5;
     }
 
-    /* Cantoneiras táticas estilo visor forense */
-    .dossier-card::before,
-    .dossier-card::after {
+    /* Cantoneiras táticas */
+    .home-dossier::before,
+    .home-dossier::after {
       content: "";
       position: absolute;
-      width: 18px;
-      height: 18px;
+      width: 22px;
+      height: 22px;
       border-color: var(--crimson-primary);
       border-style: solid;
       pointer-events: none;
     }
-    .dossier-card::before {
+
+    .home-dossier::before {
       top: -1px;
       left: -1px;
       border-width: 2px 0 0 2px;
       border-top-left-radius: 10px;
     }
-    .dossier-card::after {
+
+    .home-dossier::after {
       bottom: -1px;
       right: -1px;
       border-width: 0 2px 2px 0;
       border-bottom-right-radius: 10px;
     }
 
-    .cipher-top-bar {
+    .dossier-classification {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
       gap: 0.5rem;
       font-family: var(--font-mono);
-      font-size: 0.7rem;
+      font-size: 0.72rem;
       letter-spacing: 0.14em;
       color: var(--text-secondary);
       border-bottom: 1px solid var(--border-subtle);
       padding-bottom: 0.85rem;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.65rem;
       text-transform: uppercase;
     }
 
-    .riddler-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
+    .stamp-classified {
       color: var(--crimson-bright);
       font-weight: 700;
       background: rgba(200, 16, 46, 0.12);
-      border: 1px solid rgba(200, 16, 46, 0.35);
-      padding: 0.2rem 0.55rem;
+      border: 1px solid rgba(200, 16, 46, 0.4);
+      padding: 0.2rem 0.6rem;
       border-radius: 4px;
     }
 
-    .bat-emblem-wrap {
+    .home-emblem-wrap {
       display: flex;
       justify-content: center;
-      margin-bottom: 1.1rem;
+      margin-bottom: 1.15rem;
     }
 
-    .bat-emblem-svg {
-      width: clamp(130px, 28vw, 190px);
+    .home-emblem-svg {
+      width: clamp(140px, 26vw, 210px);
       height: auto;
-      filter: drop-shadow(0 0 18px rgba(200, 16, 46, 0.55));
-      animation: emblemPulse 4s ease-in-out infinite;
+      filter: drop-shadow(0 0 22px rgba(200, 16, 46, 0.6));
+      animation: batGlow 4s ease-in-out infinite;
     }
 
-    @keyframes emblemPulse {
-      0%, 100% { filter: drop-shadow(0 0 14px rgba(200, 16, 46, 0.45)); }
-      50% { filter: drop-shadow(0 0 26px rgba(230, 25, 56, 0.78)); }
+    @keyframes batGlow {
+      0%, 100% { filter: drop-shadow(0 0 15px rgba(200, 16, 46, 0.45)); }
+      50% { filter: drop-shadow(0 0 28px rgba(230, 25, 56, 0.82)); }
     }
 
-    .dossier-tag {
-      display: inline-block;
+    .home-kicker {
+      display: block;
       font-family: var(--font-mono);
-      font-size: clamp(0.66rem, 1.8vw, 0.78rem);
+      font-size: clamp(0.72rem, 1.8vw, 0.84rem);
       font-weight: 700;
-      letter-spacing: 0.18em;
+      letter-spacing: 0.2em;
       color: var(--crimson-bright);
       text-transform: uppercase;
-      margin-bottom: 0.55rem;
+      margin-bottom: 0.45rem;
     }
 
-    .splash-title {
+    .home-title {
       font-family: var(--font-display);
-      font-size: clamp(1.9rem, 5.5vw, 3.15rem);
+      font-size: clamp(1.9rem, 5.2vw, 3.25rem);
       font-weight: 700;
       letter-spacing: 0.08em;
       line-height: 1.08;
       text-transform: uppercase;
       color: #ffffff;
-      text-shadow: 0 2px 20px rgba(200, 16, 46, 0.4);
+      text-shadow: 0 4px 24px rgba(200, 16, 46, 0.42);
       margin-bottom: 1rem;
     }
 
-    .splash-briefing {
-      font-size: clamp(0.88rem, 2.2vw, 0.98rem);
-      line-height: 1.65;
+    .home-desc {
+      font-size: clamp(0.95rem, 2.1vw, 1.12rem);
+      line-height: 1.6;
       color: var(--text-secondary);
-      max-width: 540px;
-      margin: 0 auto 1.5rem;
+      max-width: 680px;
+      margin: 0 auto 2rem;
     }
 
-    .splash-briefing strong {
-      color: var(--text-primary);
-      font-weight: 600;
+    .home-desc strong {
+      color: #ffffff;
+      font-weight: 700;
     }
 
-    .tactical-rules-grid {
+    /* Grade dos 3 Botões Principais de Ação */
+    .home-actions-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
-      gap: 0.75rem;
-      margin-bottom: 1.85rem;
-      text-align: left;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.75rem;
     }
 
-    .rule-item {
-      background: rgba(255, 255, 255, 0.025);
-      border: 1px solid var(--border-subtle);
-      border-radius: 6px;
-      padding: 0.75rem 0.85rem;
+    @media (max-width: 820px) {
+      .home-actions-grid {
+        grid-template-columns: 1fr;
+      }
     }
 
-    .rule-item-key {
-      font-family: var(--font-mono);
-      font-size: 0.72rem;
-      font-weight: 700;
-      color: var(--crimson-bright);
-      letter-spacing: 0.08em;
-      margin-bottom: 0.25rem;
-      display: block;
-    }
-
-    .rule-item-desc {
-      font-size: 0.78rem;
-      color: var(--text-secondary);
-      line-height: 1.4;
-    }
-
-    .btn-start-investigation {
+    .home-action-card {
       position: relative;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.75rem;
-      width: 100%;
-      max-width: 340px;
-      padding: 1rem 1.75rem;
-      font-family: var(--font-display);
-      font-size: 1.2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      text-align: left;
+      gap: 0.65rem;
+      padding: 1.35rem 1.25rem;
+      background: linear-gradient(180deg, rgba(22, 26, 35, 0.95) 0%, rgba(14, 16, 22, 0.98) 100%);
+      border: 1px solid var(--border-strong);
+      border-top: 3px solid var(--crimson-primary);
+      border-radius: 8px;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+    }
+
+    .home-action-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--crimson-bright);
+      box-shadow: 0 14px 34px rgba(200, 16, 46, 0.32);
+    }
+
+    .action-card-code {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
       font-weight: 700;
-      letter-spacing: 0.16em;
+      letter-spacing: 0.14em;
+      color: var(--crimson-bright);
+      text-transform: uppercase;
+    }
+
+    .action-card-title {
+      font-family: var(--font-display);
+      font-size: 1.42rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
       color: #ffffff;
-      background: linear-gradient(135deg, #c8102e 0%, #8e091e 100%);
-      border: 1px solid #ff3352;
+      line-height: 1.15;
+    }
+
+    .action-card-sub {
+      font-size: 0.92rem;
+      line-height: 1.45;
+      color: var(--text-secondary);
+      flex: 1;
+    }
+
+    .action-card-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: #ffffff;
+      background: var(--crimson-primary);
+      padding: 0.42rem 0.75rem;
+      border-radius: 4px;
+      margin-top: 0.35rem;
+      text-transform: uppercase;
+      transition: background 0.18s ease;
+    }
+
+    .home-action-card:hover .action-card-cta {
+      background: var(--crimson-bright);
+    }
+
+    /* Botão discreto para o Guia Teórico */
+    .home-theory-footer {
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 1.15rem;
+      display: flex;
+      justify-content: center;
+    }
+
+    .btn-discrete-theory {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.55rem 1.15rem;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px dashed var(--border-strong);
       border-radius: 6px;
       cursor: pointer;
-      box-shadow:
-        0 10px 30px rgba(200, 16, 46, 0.42),
-        inset 0 1px 0 rgba(255, 255, 255, 0.22);
-      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+      transition: all 0.2s ease;
     }
 
-    .btn-start-investigation:hover {
-      transform: translateY(-2px);
-      background: linear-gradient(135deg, #e01435 0%, #a50b24 100%);
-      box-shadow:
-        0 14px 36px rgba(230, 25, 56, 0.58),
-        inset 0 1px 0 rgba(255, 255, 255, 0.3);
-    }
-
-    .btn-start-investigation:active {
-      transform: translateY(0);
+    .btn-discrete-theory:hover {
+      color: #ffffff;
+      border-color: var(--crimson-bright);
+      background: rgba(200, 16, 46, 0.12);
     }
 
     /* ==========================================================================
-       INTERFACE PRINCIPAL DO JOGO
+       6. PÁGINA 1: CRUZADINHA DE ARQUITETURA COMPUTACIONAL (18x17)
        ========================================================================== */
-    .app-shell {
-      position: relative;
-      z-index: 10;
-      max-width: 1380px;
-      margin: 0 auto;
-      padding: 0.85rem clamp(0.6rem, 2vw, 1.5rem) 2.5rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.95rem;
-    }
-
-    /* HUD Superior */
-    .tactical-hud {
+    .cw-hud {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
       gap: 0.85rem;
-      background: rgba(13, 14, 18, 0.92);
-      border: 1px solid var(--border-subtle);
-      border-left: 3px solid var(--crimson-primary);
-      border-radius: 8px;
-      padding: 0.75rem 1.1rem;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
-      backdrop-filter: blur(8px);
+      padding: 0.85rem 1.1rem;
+      border-left: 4px solid var(--crimson-primary);
+      margin-bottom: 0.9rem;
     }
 
-    .hud-brand {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-
-    .hud-bat-icon {
-      width: 44px;
-      height: auto;
-      flex-shrink: 0;
-      filter: drop-shadow(0 0 8px rgba(200, 16, 46, 0.5));
-    }
-
-    .hud-title-group h1 {
+    .cw-hud-title h2 {
       font-family: var(--font-display);
-      font-size: clamp(1.1rem, 2.5vw, 1.45rem);
-      font-weight: 700;
+      font-size: clamp(1.2rem, 2.6vw, 1.6rem);
       letter-spacing: 0.08em;
       text-transform: uppercase;
       color: #ffffff;
-      line-height: 1.1;
     }
 
-    .hud-title-group span {
-      display: block;
+    .cw-hud-title p {
       font-family: var(--font-mono);
-      font-size: 0.68rem;
-      letter-spacing: 0.12em;
+      font-size: 0.72rem;
       color: var(--text-secondary);
-      margin-top: 0.15rem;
+      letter-spacing: 0.08em;
     }
 
-    /* Contador de Acertos */
-    .hud-score-panel {
+    .cw-score-box {
       display: flex;
       flex-direction: column;
       align-items: center;
-      background: #090a0d;
+      background: #08090c;
       border: 1px solid var(--border-strong);
       border-radius: 6px;
       padding: 0.45rem 1rem;
       min-width: 195px;
     }
 
-    .score-label {
+    .cw-score-label {
       font-family: var(--font-mono);
       font-size: 0.62rem;
-      letter-spacing: 0.16em;
+      letter-spacing: 0.14em;
       color: var(--text-muted);
-      text-transform: uppercase;
     }
 
-    .score-value {
+    .cw-score-value {
       font-family: var(--font-mono);
       font-size: 1.05rem;
-      font-weight: 800;
+      font-weight: 700;
       color: var(--text-primary);
-      letter-spacing: 0.04em;
-      margin: 0.12rem 0 0.3rem;
-      transition: color 0.3s ease;
+      margin: 0.15rem 0 0.3rem;
     }
 
-    .score-value.all-solved {
+    .cw-score-value.complete {
       color: var(--terminal-green);
       text-shadow: 0 0 12px var(--terminal-green-glow);
     }
 
-    .score-segments {
+    .cw-score-bars {
       display: grid;
       grid-template-columns: repeat(14, 1fr);
       gap: 2px;
       width: 100%;
     }
 
-    .score-seg {
+    .cw-bar-seg {
       height: 4px;
       border-radius: 1px;
-      background: #1d212c;
-      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+      background: #1d222e;
+      transition: background 0.25s ease;
     }
 
-    .score-seg.filled {
+    .cw-bar-seg.filled {
       background: var(--terminal-green);
       box-shadow: 0 0 6px var(--terminal-green-glow);
     }
 
-    /* Botões de Ação Tática */
-    .hud-actions {
+    .cw-actions {
       display: flex;
       flex-wrap: wrap;
-      align-items: center;
       gap: 0.55rem;
     }
 
-    .btn-tactical {
+    .btn-crimson {
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 0.45rem;
-      padding: 0.6rem 1.05rem;
+      padding: 0.58rem 1.05rem;
       font-family: var(--font-mono);
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       font-weight: 700;
       letter-spacing: 0.08em;
       text-transform: uppercase;
+      color: #ffffff;
+      background: linear-gradient(135deg, var(--crimson-primary) 0%, #8f0a20 100%);
+      border: 1px solid #f22646;
       border-radius: 6px;
       cursor: pointer;
-      transition: all 0.18s ease;
-      border: 1px solid transparent;
-    }
-
-    .btn-check {
-      background: linear-gradient(135deg, var(--crimson-primary) 0%, #960b22 100%);
-      border-color: #f02444;
-      color: #ffffff;
       box-shadow: 0 4px 16px rgba(200, 16, 46, 0.35);
+      transition: all 0.18s ease;
     }
 
-    .btn-check:hover {
-      background: linear-gradient(135deg, var(--crimson-bright) 0%, #b30d28 100%);
-      box-shadow: 0 6px 22px rgba(230, 25, 56, 0.52);
+    .btn-crimson:hover {
+      background: linear-gradient(135deg, var(--crimson-bright) 0%, #ad0c26 100%);
       transform: translateY(-1px);
     }
 
-    .btn-reset {
-      background: var(--bg-surface);
-      border-color: var(--border-strong);
+    .btn-dark {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      padding: 0.58rem 1.05rem;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
       color: var(--text-primary);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-strong);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.18s ease;
     }
 
-    .btn-reset:hover {
+    .btn-dark:hover {
       background: var(--bg-surface-hover);
       border-color: var(--crimson-primary);
       color: #ffffff;
     }
 
-    .btn-icon-only {
-      padding: 0.6rem 0.72rem;
-      background: var(--bg-surface);
-      border-color: var(--border-subtle);
-      color: var(--text-secondary);
-    }
-
-    .btn-icon-only:hover {
-      border-color: var(--border-strong);
-      color: var(--text-primary);
-    }
-
-    /* ==========================================================================
-       BANNERS DE FEEDBACK (STATUS / VITÓRIA PROTOCOLO CONCLUÍDO)
-       ========================================================================== */
-    .status-banner {
+    .cw-banner {
       display: none;
       align-items: center;
       justify-content: space-between;
       gap: 0.75rem;
-      padding: 0.75rem 1rem;
-      border-radius: 7px;
+      padding: 0.7rem 1rem;
+      border-radius: 6px;
       font-family: var(--font-mono);
-      font-size: 0.82rem;
-      animation: fadeSlideDown 0.3s ease;
+      font-size: 0.8rem;
+      margin-bottom: 0.9rem;
     }
 
-    .status-banner.visible {
+    .cw-banner.show {
       display: flex;
     }
 
-    .status-banner.info {
-      background: rgba(200, 16, 46, 0.12);
+    .cw-banner.info {
+      background: rgba(200, 16, 46, 0.14);
       border: 1px solid rgba(200, 16, 46, 0.45);
-      color: #f3c6ce;
+      color: #f4c6ce;
     }
 
-    .status-banner.victory {
-      background: linear-gradient(90deg, rgba(30, 215, 96, 0.16) 0%, rgba(13, 18, 15, 0.95) 100%);
+    .cw-banner.success {
+      background: rgba(30, 215, 96, 0.15);
       border: 1px solid var(--terminal-green);
-      color: #d7ffe5;
-      box-shadow: 0 0 28px rgba(30, 215, 96, 0.22);
+      color: #d4ffe3;
     }
 
-    @keyframes fadeSlideDown {
-      from { opacity: 0; transform: translateY(-6px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* ==========================================================================
-       LAYOUT PRINCIPAL: TABULEIRO (ESQUERDA) + PISTAS (DIREITA)
-       ========================================================================== */
-    .workspace-grid {
+    .cw-workspace {
       display: grid;
       grid-template-columns: minmax(0, 1.18fr) minmax(0, 0.92fr);
       gap: 1rem;
@@ -540,97 +665,58 @@
     }
 
     @media (max-width: 1024px) {
-      .workspace-grid {
+      .cw-workspace {
         grid-template-columns: 1fr;
       }
     }
 
-    /* Painel do Tabuleiro */
-    .board-panel {
-      background: rgba(13, 14, 18, 0.94);
-      border: 1px solid var(--border-subtle);
-      border-radius: 8px;
-      padding: clamp(0.65rem, 1.8vw, 1.1rem);
-      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.65);
+    .cw-board-panel {
+      padding: clamp(0.65rem, 1.8vw, 1rem);
     }
 
-    /* Barra da Pista Ativa acima do tabuleiro */
-    .active-clue-bar {
+    .cw-active-clue-bar {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 0.75rem;
-      background: #090a0e;
+      background: #08090d;
       border: 1px solid rgba(200, 16, 46, 0.45);
       border-left: 4px solid var(--crimson-primary);
       border-radius: 6px;
-      padding: 0.65rem 0.85rem;
-      margin-bottom: 0.85rem;
-      min-height: 62px;
+      padding: 0.6rem 0.85rem;
+      margin-bottom: 0.8rem;
+      min-height: 60px;
     }
 
-    .active-clue-meta {
+    .cw-active-clue-meta {
       display: flex;
       flex-direction: column;
-      gap: 0.22rem;
+      gap: 0.2rem;
     }
 
-    .active-clue-header {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
+    .cw-active-clue-head {
       font-family: var(--font-mono);
       font-size: 0.72rem;
       font-weight: 700;
       letter-spacing: 0.1em;
       color: var(--crimson-bright);
-      text-transform: uppercase;
     }
 
-    .active-clue-length {
-      color: var(--text-muted);
-      font-weight: 600;
-    }
-
-    .active-clue-text {
-      font-size: clamp(0.84rem, 1.8vw, 0.95rem);
+    .cw-active-clue-text {
+      font-size: 0.95rem;
       color: var(--text-primary);
-      line-height: 1.4;
-      font-weight: 500;
+      line-height: 1.35;
     }
 
-    .btn-toggle-dir {
-      flex-shrink: 0;
-      background: var(--bg-surface);
-      border: 1px solid var(--border-strong);
-      color: var(--text-secondary);
-      font-family: var(--font-mono);
-      font-size: 0.68rem;
-      font-weight: 700;
-      padding: 0.42rem 0.65rem;
-      border-radius: 5px;
-      cursor: pointer;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      transition: all 0.15s ease;
-    }
-
-    .btn-toggle-dir:hover {
-      border-color: var(--crimson-primary);
-      color: #ffffff;
-    }
-
-    /* Grade 18x17 da Cruzadinha */
-    .crossword-frame {
+    .cw-grid-frame {
       width: 100%;
-      background: #040406;
+      background: #040507;
       border: 1px solid var(--border-strong);
       border-radius: 6px;
-      padding: clamp(3px, 0.8vw, 8px);
-      box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.9);
+      padding: clamp(3px, 0.7vw, 7px);
     }
 
-    .crossword-grid {
+    .cw-grid {
       display: grid;
       grid-template-columns: repeat(17, minmax(0, 1fr));
       gap: clamp(1px, 0.25vw, 3px);
@@ -638,93 +724,65 @@
       user-select: none;
     }
 
-    /* Célula Inativa (Vazio Noir) */
-    .grid-cell-void {
+    .cw-cell-void {
       aspect-ratio: 1 / 1;
       background: var(--bg-cell-void);
       border-radius: 2px;
-      position: relative;
     }
 
-    /* Célula Ativa */
-    .grid-cell-active {
+    .cw-cell-active {
       aspect-ratio: 1 / 1;
       position: relative;
-      background: var(--bg-cell-active);
-      border: 1px solid #2b3142;
+      background: #14171f;
+      border: 1px solid #2b3244;
       border-radius: 3px;
-      transition: background-color 0.14s ease, border-color 0.14s ease, box-shadow 0.14s ease;
+      transition: background 0.14s ease, border-color 0.14s ease;
     }
 
-    .grid-cell-active:hover {
-      border-color: #4b5570;
-    }
-
-    /* Destaque da Palavra Selecionada */
-    .grid-cell-active.word-highlight {
+    .cw-cell-active.word-highlight {
       background: rgba(200, 16, 46, 0.16);
-      border-color: rgba(200, 16, 46, 0.55);
+      border-color: rgba(200, 16, 46, 0.58);
     }
 
-    /* Célula Foco Atual */
-    .grid-cell-active.cell-focused {
-      background: rgba(200, 16, 46, 0.32);
-      border-color: #ff2a4b;
+    .cw-cell-active.cell-focused {
+      background: rgba(200, 16, 46, 0.34);
+      border-color: #ff2e4f;
       box-shadow: 0 0 10px rgba(230, 25, 56, 0.65);
       z-index: 3;
     }
 
-    /* Validação: Palavra Correta (Verde Terminal) */
-    .grid-cell-active.cell-correct {
+    .cw-cell-active.cell-correct {
       background: var(--terminal-green-tint);
       border-color: var(--terminal-green);
-      box-shadow: inset 0 0 8px rgba(30, 215, 96, 0.22);
     }
 
-    .grid-cell-active.cell-correct .cell-input {
+    .cw-cell-active.cell-correct .cw-input {
       color: var(--terminal-green);
       text-shadow: 0 0 8px rgba(30, 215, 96, 0.45);
     }
 
-    .grid-cell-active.cell-correct.cell-focused {
-      box-shadow: 0 0 12px rgba(30, 215, 96, 0.75);
-    }
-
-    /* Validação: Palavra Errada / Incompleta (Vermelho Carmesim) */
-    .grid-cell-active.cell-wrong {
+    .cw-cell-active.cell-wrong {
       background: rgba(230, 25, 56, 0.24);
       border-color: var(--crimson-bright);
-      box-shadow: inset 0 0 8px rgba(230, 25, 56, 0.28);
     }
 
-    .grid-cell-active.cell-wrong .cell-input {
-      color: #ff5c75;
+    .cw-cell-active.cell-wrong .cw-input {
+      color: #ff6b81;
     }
 
-    /* Número pequeno da pista no canto superior esquerdo */
-    .cell-number {
+    .cw-cell-num {
       position: absolute;
       top: 1px;
       left: 2px;
       font-family: var(--font-mono);
-      font-size: clamp(0.36rem, 0.95vw, 0.56rem);
+      font-size: clamp(0.38rem, 0.9vw, 0.56rem);
       font-weight: 700;
       line-height: 1;
       color: #9ca3b5;
       pointer-events: none;
-      z-index: 2;
     }
 
-    .word-highlight .cell-number {
-      color: #ff8598;
-    }
-
-    .cell-correct .cell-number {
-      color: #6ee79a;
-    }
-
-    /* Input de 1 caractere */
-    .cell-input {
+    .cw-input {
       width: 100%;
       height: 100%;
       border: none;
@@ -732,503 +790,1668 @@
       background: transparent;
       text-align: center;
       font-family: var(--font-mono);
-      font-size: clamp(0.62rem, 1.65vw, 1.05rem);
-      font-weight: 800;
-      color: #f3f4f6;
+      font-size: clamp(0.62rem, 1.55vw, 1.02rem);
+      font-weight: 700;
+      color: #ffffff;
       text-transform: uppercase;
       caret-color: transparent;
       cursor: pointer;
-      padding: 0;
       padding-top: 12%;
-      border-radius: 2px;
     }
 
-    /* Legenda rápida abaixo do tabuleiro */
-    .board-legend {
+    .cw-legend {
       display: flex;
       flex-wrap: wrap;
-      align-items: center;
       justify-content: space-between;
-      gap: 0.65rem;
-      margin-top: 0.75rem;
-      padding-top: 0.65rem;
+      gap: 0.5rem;
+      margin-top: 0.7rem;
+      padding-top: 0.6rem;
       border-top: 1px solid var(--border-subtle);
       font-family: var(--font-mono);
       font-size: 0.68rem;
       color: var(--text-muted);
     }
 
-    .legend-indicators {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
+    .cw-clues-col {
+      display: grid;
+      grid-template-columns: 1fr;
       gap: 0.85rem;
     }
 
-    .legend-dot {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-    }
-
-    .legend-dot i {
-      display: inline-block;
-      width: 9px;
-      height: 9px;
-      border-radius: 2px;
-    }
-
-    /* ==========================================================================
-       PAINEL DE PISTAS (HORIZONTAIS & VERTICAIS)
-       ========================================================================== */
-    .clues-panel {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 0.9rem;
-    }
-
     @media (min-width: 680px) and (max-width: 1024px) {
-      .clues-panel {
+      .cw-clues-col {
         grid-template-columns: 1fr 1fr;
       }
     }
 
-    .clue-group-card {
-      background: rgba(13, 14, 18, 0.94);
-      border: 1px solid var(--border-subtle);
-      border-radius: 8px;
+    .cw-clue-card {
       padding: 0.9rem;
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
     }
 
-    .clue-group-header {
+    .cw-clue-card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-strong);
+      padding-bottom: 0.5rem;
+      margin-bottom: 0.6rem;
+    }
+
+    .cw-clue-card-head h3 {
+      font-family: var(--font-display);
+      font-size: 1.05rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--crimson-bright);
+    }
+
+    .cw-clue-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.38rem;
+    }
+
+    .cw-clue-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+      padding: 0.48rem 0.6rem;
+      border-radius: 5px;
+      border: 1px solid transparent;
+      background: rgba(255, 255, 255, 0.02);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .cw-clue-item:hover {
+      background: var(--bg-surface-hover);
+      border-color: var(--border-strong);
+    }
+
+    .cw-clue-item.active-clue {
+      background: rgba(200, 16, 46, 0.16);
+      border-color: var(--crimson-primary);
+      box-shadow: inset 3px 0 0 var(--crimson-bright);
+    }
+
+    .cw-clue-item.solved-clue {
+      background: rgba(30, 215, 96, 0.09);
+      border-color: rgba(30, 215, 96, 0.35);
+    }
+
+    .cw-clue-item.wrong-clue {
+      border-color: rgba(230, 25, 56, 0.45);
+    }
+
+    .cw-clue-num {
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: var(--crimson-bright);
+      min-width: 1.5rem;
+    }
+
+    .solved-clue .cw-clue-num {
+      color: var(--terminal-green);
+    }
+
+    .cw-clue-body {
+      flex: 1;
+      font-size: 0.9rem;
+      line-height: 1.38;
+      color: var(--text-primary);
+    }
+
+    .cw-clue-tag {
+      font-family: var(--font-mono);
+      font-size: 0.66rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      background: #08090c;
+      border: 1px solid var(--border-subtle);
+      padding: 0.12rem 0.38rem;
+      border-radius: 4px;
+    }
+
+    .solved-clue .cw-clue-tag {
+      color: var(--terminal-green);
+      border-color: rgba(30, 215, 96, 0.4);
+    }
+
+    /* ==========================================================================
+       7. PÁGINA 2: PORTAS LÓGICAS (QUIZ INVESTIGATIVO + GUIA TEÓRICO)
+       ========================================================================== */
+    .logic-subnav {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0.85rem 1.1rem;
+      border-left: 4px solid var(--crimson-primary);
+      margin-bottom: 1.1rem;
+    }
+
+    .logic-subnav-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .subtab-btn {
+      padding: 0.55rem 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-strong);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+
+    .subtab-btn.active {
+      color: #ffffff;
+      background: var(--crimson-primary);
+      border-color: #ff3352;
+      box-shadow: 0 0 16px rgba(200, 16, 46, 0.35);
+    }
+
+    /* Quiz Container */
+    .quiz-panel {
+      max-width: 880px;
+      margin: 0 auto;
+      padding: clamp(1.15rem, 3vw, 2rem);
+    }
+
+    .quiz-header-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      border-bottom: 1px solid var(--border-strong);
+      padding-bottom: 0.85rem;
+      margin-bottom: 1.35rem;
+    }
+
+    .quiz-progress-text {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--crimson-bright);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .quiz-score-pill {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--terminal-green);
+      background: rgba(30, 215, 96, 0.1);
+      border: 1px solid rgba(30, 215, 96, 0.35);
+      padding: 0.3rem 0.75rem;
+      border-radius: 5px;
+    }
+
+    .quiz-progress-track {
+      width: 100%;
+      height: 6px;
+      background: #1a1e29;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 1.4rem;
+    }
+
+    .quiz-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--crimson-primary), var(--crimson-bright));
+      transition: width 0.3s ease;
+    }
+
+    .quiz-category-tag {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: var(--crimson-bright);
+      background: rgba(200, 16, 46, 0.12);
+      border: 1px solid rgba(200, 16, 46, 0.35);
+      padding: 0.2rem 0.55rem;
+      border-radius: 4px;
+      margin-bottom: 0.65rem;
+      text-transform: uppercase;
+    }
+
+    .quiz-question-text {
+      font-size: clamp(1.1rem, 2.3vw, 1.35rem);
+      font-weight: 700;
+      line-height: 1.45;
+      color: #ffffff;
+      margin-bottom: 1.25rem;
+    }
+
+    .quiz-options-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .quiz-option-btn {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      width: 100%;
+      text-align: left;
+      padding: 0.85rem 1rem;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-strong);
+      border-radius: 7px;
+      color: var(--text-primary);
+      font-family: var(--font-tactical);
+      font-size: 1.02rem;
+      line-height: 1.4;
+      cursor: pointer;
+      transition: all 0.16s ease;
+    }
+
+    .quiz-option-btn:hover:not(:disabled) {
+      background: var(--bg-surface-hover);
+      border-color: var(--crimson-bright);
+    }
+
+    .quiz-option-btn:disabled {
+      cursor: default;
+    }
+
+    .quiz-option-btn.opt-correct {
+      background: rgba(30, 215, 96, 0.15);
+      border-color: var(--terminal-green);
+      color: #d8ffe6;
+    }
+
+    .quiz-option-btn.opt-wrong {
+      background: rgba(230, 25, 56, 0.18);
+      border-color: var(--crimson-bright);
+      color: #ffd1d8;
+    }
+
+    .opt-letter {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: var(--crimson-bright);
+      min-width: 1.5rem;
+    }
+
+    .opt-correct .opt-letter {
+      color: var(--terminal-green);
+    }
+
+    .quiz-feedback-box {
+      display: none;
+      padding: 0.95rem 1.1rem;
+      border-radius: 7px;
+      margin-bottom: 1.25rem;
+      font-size: 0.98rem;
+      line-height: 1.5;
+    }
+
+    .quiz-feedback-box.visible {
+      display: block;
+      animation: pageFadeIn 0.25s ease;
+    }
+
+    .quiz-feedback-box.fb-correct {
+      background: rgba(30, 215, 96, 0.12);
+      border: 1px solid var(--terminal-green);
+      color: #d7ffe5;
+    }
+
+    .quiz-feedback-box.fb-wrong {
+      background: rgba(200, 16, 46, 0.14);
+      border: 1px solid var(--crimson-bright);
+      color: #ffd4dc;
+    }
+
+    .quiz-footer-controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    /* Guia Teórico Completo */
+    .theory-section-header {
+      margin: 1.5rem 0 0.9rem;
+      padding-bottom: 0.45rem;
+      border-bottom: 2px solid var(--crimson-primary);
+    }
+
+    .theory-section-header h3 {
+      font-family: var(--font-display);
+      font-size: 1.45rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #ffffff;
+    }
+
+    .theory-section-header p {
+      font-size: 0.96rem;
+      color: var(--text-secondary);
+      margin-top: 0.2rem;
+    }
+
+    .gates-theory-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .gate-theory-card {
+      padding: 1.15rem;
+      border-top: 3px solid var(--crimson-primary);
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .gate-card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 0.65rem;
+    }
+
+    .gate-card-top h4 {
+      font-family: var(--font-display);
+      font-size: 1.3rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #ffffff;
+    }
+
+    .gate-expr-badge {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--crimson-bright);
+      background: rgba(200, 16, 46, 0.14);
+      border: 1px solid rgba(200, 16, 46, 0.4);
+      padding: 0.22rem 0.55rem;
+      border-radius: 4px;
+    }
+
+    .overline {
+      text-decoration: overline;
+    }
+
+    .gate-diagram-box {
+      background: #08090d;
+      border: 1px solid var(--border-strong);
+      border-radius: 6px;
+      padding: 0.6rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .gate-theory-desc {
+      font-size: 0.96rem;
+      line-height: 1.5;
+      color: var(--text-primary);
+    }
+
+    .gate-theory-analogy {
+      background: rgba(255, 255, 255, 0.025);
+      border-left: 3px solid var(--crimson-primary);
+      padding: 0.55rem 0.75rem;
+      font-size: 0.92rem;
+      color: var(--text-secondary);
+      line-height: 1.45;
+    }
+
+    .gate-theory-visual-note {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: #cbd5e1;
+      background: #090b0f;
+      padding: 0.45rem 0.65rem;
+      border-radius: 4px;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .truth-table-mini {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      text-align: center;
+    }
+
+    .truth-table-mini th {
+      background: #181c26;
+      color: var(--crimson-bright);
+      padding: 0.35rem;
+      border: 1px solid var(--border-strong);
+    }
+
+    .truth-table-mini td {
+      padding: 0.32rem;
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+    }
+
+    .truth-table-mini td.out-one {
+      color: var(--terminal-green);
+      font-weight: 700;
+    }
+
+    /* Tabela Resumo Comparativo 2.3 */
+    .summary-table-wrap {
+      overflow-x: auto;
+      padding: 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .summary-table {
+      width: 100%;
+      min-width: 680px;
+      border-collapse: collapse;
+      font-family: var(--font-mono);
+      font-size: 0.84rem;
+    }
+
+    .summary-table th {
+      background: #171b24;
+      color: var(--crimson-bright);
+      text-align: left;
+      padding: 0.65rem 0.75rem;
+      border: 1px solid var(--border-strong);
+      text-transform: uppercase;
+    }
+
+    .summary-table td {
+      padding: 0.6rem 0.75rem;
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+    }
+
+    .summary-table tr:nth-child(even) td {
+      background: rgba(255, 255, 255, 0.015);
+    }
+
+    .validation-props-box {
+      padding: 1rem 1.25rem;
+      border-left: 4px solid var(--terminal-green);
+      background: rgba(30, 215, 96, 0.06);
+    }
+
+    .validation-props-box h4 {
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--terminal-green);
+      margin-bottom: 0.5rem;
+    }
+
+    .validation-props-box ul {
+      padding-left: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      color: var(--text-primary);
+      font-size: 0.96rem;
+    }
+
+    /* ==========================================================================
+       8. PÁGINA 3: LABORATÓRIO DE CIRCUITOS & 7 EXERCÍCIOS PRÁTICOS
+       ========================================================================== */
+    .lab-layout {
+      display: grid;
+      grid-template-columns: 340px minmax(0, 1fr);
+      gap: 1rem;
+      align-items: start;
+    }
+
+    @media (max-width: 1080px) {
+      .lab-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .exercises-sidebar {
+      padding: 0.95rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .exercises-sidebar-head {
       display: flex;
       align-items: center;
       justify-content: space-between;
       border-bottom: 1px solid var(--border-strong);
       padding-bottom: 0.55rem;
-      margin-bottom: 0.65rem;
     }
 
-    .clue-group-title {
+    .exercises-sidebar-head h3 {
       font-family: var(--font-display);
-      font-size: 1.05rem;
-      font-weight: 700;
-      letter-spacing: 0.14em;
+      font-size: 1.15rem;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
       color: var(--crimson-bright);
+    }
+
+    .ex-progress-badge {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--terminal-green);
+      background: rgba(30, 215, 96, 0.12);
+      border: 1px solid rgba(30, 215, 96, 0.35);
+      padding: 0.18rem 0.5rem;
+      border-radius: 4px;
+    }
+
+    .exercise-list {
       display: flex;
-      align-items: center;
+      flex-direction: column;
       gap: 0.45rem;
     }
 
-    .clue-group-count {
-      font-family: var(--font-mono);
-      font-size: 0.68rem;
-      color: var(--text-muted);
-    }
-
-    .clue-list {
-      list-style: none;
+    .exercise-btn {
       display: flex;
-      flex-direction: column;
-      gap: 0.42rem;
-    }
-
-    .clue-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 0.55rem;
-      padding: 0.52rem 0.62rem;
-      background: rgba(255, 255, 255, 0.018);
-      border: 1px solid transparent;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      width: 100%;
+      text-align: left;
+      padding: 0.58rem 0.72rem;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
       border-radius: 6px;
+      color: var(--text-primary);
       cursor: pointer;
       transition: all 0.15s ease;
     }
 
-    .clue-item:hover {
-      background: var(--bg-surface-hover);
+    .exercise-btn:hover {
       border-color: var(--border-strong);
+      background: var(--bg-surface-hover);
     }
 
-    .clue-item.active-clue {
+    .exercise-btn.active-ex {
+      border-color: var(--crimson-bright);
       background: rgba(200, 16, 46, 0.15);
-      border-color: var(--crimson-primary);
       box-shadow: inset 3px 0 0 var(--crimson-bright);
     }
 
-    .clue-item.solved-clue {
-      background: rgba(30, 215, 96, 0.08);
-      border-color: rgba(30, 215, 96, 0.35);
+    .exercise-btn.done-ex {
+      border-color: rgba(30, 215, 96, 0.45);
     }
 
-    .clue-item.solved-clue .clue-text {
-      color: #a9e6be;
+    .ex-btn-title {
+      font-size: 0.92rem;
+      font-weight: 700;
+      line-height: 1.25;
     }
 
-    .clue-item.wrong-clue {
-      border-color: rgba(230, 25, 56, 0.45);
-    }
-
-    .clue-num-badge {
+    .ex-btn-expr {
+      display: block;
       font-family: var(--font-mono);
-      font-size: 0.76rem;
-      font-weight: 800;
-      color: var(--crimson-bright);
-      min-width: 1.55rem;
-      padding-top: 0.08rem;
+      font-size: 0.72rem;
+      color: var(--text-secondary);
+      margin-top: 0.12rem;
     }
 
-    .solved-clue .clue-num-badge {
-      color: var(--terminal-green);
-    }
-
-    .clue-text {
-      flex: 1;
-      font-size: 0.83rem;
-      line-height: 1.42;
-      color: var(--text-primary);
-    }
-
-    .clue-status-tag {
+    .ex-status-dot {
       font-family: var(--font-mono);
-      font-size: 0.66rem;
+      font-size: 0.72rem;
       font-weight: 700;
       color: var(--text-muted);
-      background: #0a0b0e;
-      border: 1px solid var(--border-subtle);
-      padding: 0.14rem 0.4rem;
-      border-radius: 4px;
       white-space: nowrap;
-      margin-top: 0.06rem;
     }
 
-    .solved-clue .clue-status-tag {
+    .done-ex .ex-status-dot {
       color: var(--terminal-green);
+    }
+
+    /* Cartão de detalhes do exercício ativo */
+    .active-exercise-box {
+      background: #090b10;
+      border: 1px solid rgba(200, 16, 46, 0.4);
+      border-radius: 6px;
+      padding: 0.85rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.55rem;
+    }
+
+    .active-exercise-box h4 {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #ffffff;
+    }
+
+    .active-exercise-box p {
+      font-size: 0.9rem;
+      line-height: 1.45;
+      color: var(--text-secondary);
+    }
+
+    .ex-action-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      margin-top: 0.25rem;
+    }
+
+    .validation-result-log {
+      display: none;
+      margin-top: 0.4rem;
+      padding: 0.65rem;
+      border-radius: 5px;
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      line-height: 1.45;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+
+    .validation-result-log.visible {
+      display: block;
+    }
+
+    .validation-result-log.pass {
+      background: rgba(30, 215, 96, 0.12);
+      border: 1px solid var(--terminal-green);
+      color: #d7ffe5;
+    }
+
+    .validation-result-log.fail {
+      background: rgba(200, 16, 46, 0.14);
+      border: 1px solid var(--crimson-bright);
+      color: #ffd3db;
+    }
+
+    /* Bancada de Simulação */
+    .workbench-col {
+      display: flex;
+      flex-direction: column;
+      gap: 0.9rem;
+    }
+
+    .palette-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.65rem;
+      padding: 0.75rem 0.95rem;
+    }
+
+    .palette-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.38rem;
+    }
+
+    .palette-label {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-right: 0.25rem;
+    }
+
+    .comp-add-btn {
+      padding: 0.4rem 0.65rem;
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-strong);
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .comp-add-btn:hover {
+      background: rgba(200, 16, 46, 0.18);
+      border-color: var(--crimson-bright);
+      color: #ffffff;
+    }
+
+    .comp-add-btn.io-btn {
       border-color: rgba(30, 215, 96, 0.4);
+      color: #b7f7ce;
     }
 
-    .wrong-clue .clue-status-tag {
-      color: #ff6b81;
-      border-color: rgba(230, 25, 56, 0.4);
+    .comp-add-btn.io-btn:hover {
+      background: rgba(30, 215, 96, 0.18);
+      border-color: var(--terminal-green);
     }
 
-    /* ==========================================================================
-       MODAL DE VITÓRIA / DOSSIÊ CONCLUÍDO
-       ========================================================================== */
+    /* Área da Bancada Interativa */
+    .canvas-stage-wrapper {
+      position: relative;
+      width: 100%;
+      height: 460px;
+      background-color: #06070a;
+      background-image:
+        linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      background-size: 24px 24px;
+      border: 1px solid var(--border-strong);
+      border-radius: 8px;
+      overflow: hidden;
+      touch-action: none;
+      user-select: none;
+    }
+
+    #wires-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+      pointer-events: auto;
+    }
+
+    .wire-path {
+      fill: none;
+      stroke-linecap: round;
+      cursor: pointer;
+      transition: stroke 0.18s ease, stroke-width 0.18s ease;
+    }
+
+    .wire-path:hover {
+      stroke-width: 5 !important;
+      filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.6));
+    }
+
+    #nodes-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    /* Bloco de Componente na Bancada */
+    .circuit-node {
+      position: absolute;
+      pointer-events: auto;
+      background: rgba(16, 19, 27, 0.96);
+      border: 1.5px solid var(--border-strong);
+      border-radius: 7px;
+      padding: 0.45rem 0.65rem;
+      min-width: 112px;
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.75);
+      cursor: grab;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .circuit-node:active {
+      cursor: grabbing;
+    }
+
+    .circuit-node.node-high {
+      border-color: var(--terminal-green);
+      box-shadow: 0 0 18px rgba(30, 215, 96, 0.25);
+    }
+
+    .node-header {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.35rem;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+    }
+
+    .node-del-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0 2px;
+    }
+
+    .node-del-btn:hover {
+      color: var(--crimson-bright);
+    }
+
+    .switch-toggle-btn {
+      width: 56px;
+      height: 30px;
+      border-radius: 5px;
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      font-weight: 700;
+      border: 1px solid var(--border-strong);
+      background: #11141c;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .switch-toggle-btn.is-on {
+      background: rgba(30, 215, 96, 0.2);
+      border-color: var(--terminal-green);
+      color: var(--terminal-green);
+      box-shadow: 0 0 12px rgba(30, 215, 96, 0.35);
+    }
+
+    .led-bulb {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #141821;
+      border: 2px solid #353d52;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      transition: all 0.18s ease;
+    }
+
+    .led-bulb.is-on {
+      background: radial-gradient(circle, #4ade80 0%, #16a34a 75%);
+      border-color: #bbf7d0;
+      color: #041309;
+      box-shadow: 0 0 22px rgba(30, 215, 96, 0.8);
+    }
+
+    /* Pinos de Conexão (Entrada à esquerda, Saída à direita) */
+    .pin-dot {
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #1e2433;
+      border: 2px solid #94a3b8;
+      cursor: crosshair;
+      z-index: 8;
+      transition: transform 0.14s ease, background 0.14s ease, border-color 0.14s ease;
+    }
+
+    .pin-dot:hover {
+      transform: scale(1.3);
+      border-color: #ffffff;
+    }
+
+    .pin-dot.pin-out {
+      right: -8px;
+    }
+
+    .pin-dot.pin-in {
+      left: -8px;
+    }
+
+    .pin-dot.pin-high {
+      background: var(--terminal-green);
+      border-color: #dcfce7;
+      box-shadow: 0 0 8px var(--terminal-green-glow);
+    }
+
+    .pin-dot.pin-selected {
+      background: var(--crimson-bright);
+      border-color: #ffffff;
+      transform: scale(1.35);
+      box-shadow: 0 0 12px var(--crimson-glow);
+    }
+
+    .workbench-bottom-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.65rem;
+      padding: 0.65rem 0.9rem;
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      color: var(--text-secondary);
+    }
+
+    /* Painel da Tabela-Verdade Dinâmica */
+    .live-tt-panel {
+      padding: 0.95rem;
+    }
+
+    .live-tt-panel h4 {
+      font-family: var(--font-display);
+      font-size: 1.12rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--crimson-bright);
+      margin-bottom: 0.55rem;
+    }
+
+    .live-tt-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      text-align: center;
+    }
+
+    .live-tt-table th {
+      background: #161a24;
+      color: var(--text-primary);
+      padding: 0.42rem;
+      border: 1px solid var(--border-strong);
+    }
+
+    .live-tt-table td {
+      padding: 0.38rem;
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+    }
+
+    .live-tt-table tr.current-state-row td {
+      background: rgba(200, 16, 46, 0.18);
+      color: #ffffff;
+      font-weight: 700;
+    }
+
+    .live-tt-table td.val-high {
+      color: var(--terminal-green);
+      font-weight: 700;
+    }
+
+    /* Modal de Vitória da Cruzadinha */
     .modal-backdrop {
       position: fixed;
       inset: 0;
-      z-index: 90;
+      z-index: 95;
       display: none;
       align-items: center;
       justify-content: center;
       padding: 1rem;
-      background: rgba(4, 5, 7, 0.84);
+      background: rgba(4, 5, 8, 0.86);
       backdrop-filter: blur(5px);
     }
 
     .modal-backdrop.open {
       display: flex;
-      animation: fadeIn 0.25s ease;
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-
-    .victory-modal {
+    .modal-card {
       width: 100%;
-      max-width: 480px;
+      max-width: 470px;
       background: linear-gradient(180deg, #101413 0%, #0b0d0e 100%);
       border: 1px solid var(--terminal-green);
       border-radius: 10px;
-      padding: 2rem 1.75rem;
+      padding: 2rem 1.65rem;
       text-align: center;
-      box-shadow:
-        0 24px 60px rgba(0, 0, 0, 0.9),
-        0 0 40px rgba(30, 215, 96, 0.24);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.9), 0 0 40px rgba(30, 215, 96, 0.25);
     }
 
-    .victory-stamp {
-      display: inline-block;
-      font-family: var(--font-mono);
-      font-size: 0.72rem;
-      font-weight: 800;
-      letter-spacing: 0.18em;
-      color: var(--terminal-green);
-      border: 1px solid var(--terminal-green);
-      background: rgba(30, 215, 96, 0.1);
-      padding: 0.28rem 0.75rem;
-      border-radius: 4px;
-      margin-bottom: 1rem;
-      text-transform: uppercase;
-    }
-
-    .victory-modal h2 {
+    .modal-card h3 {
       font-family: var(--font-display);
-      font-size: 2rem;
+      font-size: 1.9rem;
       letter-spacing: 0.08em;
       text-transform: uppercase;
       color: #ffffff;
-      margin-bottom: 0.65rem;
+      margin: 0.65rem 0;
     }
 
-    .victory-modal p {
-      font-size: 0.9rem;
-      line-height: 1.55;
+    .modal-card p {
+      font-size: 0.98rem;
+      line-height: 1.5;
       color: var(--text-secondary);
       margin-bottom: 1.35rem;
-    }
-
-    .victory-stats {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 0.6rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .stat-box {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(30, 215, 96, 0.25);
-      border-radius: 6px;
-      padding: 0.65rem 0.4rem;
-    }
-
-    .stat-box strong {
-      display: block;
-      font-family: var(--font-mono);
-      font-size: 1.05rem;
-      color: var(--terminal-green);
-    }
-
-    .stat-box span {
-      font-family: var(--font-mono);
-      font-size: 0.62rem;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-    }
-
-    .victory-actions {
-      display: flex;
-      gap: 0.65rem;
-      justify-content: center;
-      flex-wrap: wrap;
     }
   </style>
 </head>
 <body>
 
-  <!-- Efeito atmosférico de chuva de Gotham -->
+  <!-- Chuva atmosférica de Gotham -->
   <canvas id="rain-canvas" aria-hidden="true"></canvas>
-  <div class="noir-vignette" aria-hidden="true"></div>
+  <div class="noir-overlay" aria-hidden="true"></div>
 
   <!-- ========================================================================
-       TELA INICIAL (SPLASH SCREEN — ESTÉTICA THE BATMAN 2022)
+       NAVEGAÇÃO SUPERIOR FIXA
        ======================================================================== -->
-  <section id="splash-screen" role="dialog" aria-modal="true" aria-labelledby="splash-heading">
-    <div class="dossier-card">
-      <div class="cipher-top-bar">
-        <span>GCPD // TERMINAL DE EVIDÊNCIAS</span>
-        <span class="riddler-badge">[ ? ] CIFRA ATIVA</span>
-      </div>
-
-      <!-- Emblema Geométrico Minimalista inspirado em The Batman (2022) -->
-      <div class="bat-emblem-wrap">
-        <svg class="bat-emblem-svg" viewBox="0 0 320 120" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Emblema Tático Morcego">
-          <path
-            d="M160 22 L152 6 L147 26 L136 29 L112 14 L64 8 L12 20 L38 40 L24 54 L66 64 L56 80 L108 78 L138 98 L160 114 L182 98 L212 78 L264 80 L254 64 L296 54 L282 40 L308 20 L256 8 L208 14 L184 29 L173 26 L168 6 L160 22 Z"
-            fill="#c8102e"
-            stroke="#ff3b5c"
-            stroke-width="1.5"
-          />
-          <path
-            d="M160 32 L144 37 L116 22 L76 18 L48 25 L64 38 L52 46 L86 54 L79 65 L116 64 L144 82 L160 95 L176 82 L204 64 L241 65 L234 54 L268 46 L256 38 L272 25 L244 18 L204 22 L176 37 L160 32 Z"
-            fill="#0a0709"
-            opacity="0.48"
-          />
+  <header class="top-navbar">
+    <div class="navbar-inner">
+      <button class="nav-brand" type="button" data-nav="home" aria-label="Voltar para Dossiê Central">
+        <svg class="nav-bat-svg" viewBox="0 0 320 120" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M160 22 L152 6 L147 26 L136 29 L112 14 L64 8 L12 20 L38 40 L24 54 L66 64 L56 80 L108 78 L138 98 L160 114 L182 98 L212 78 L264 80 L254 64 L296 54 L282 40 L308 20 L256 8 L208 14 L184 29 L173 26 L168 6 L160 22 Z" fill="#c8102e" />
         </svg>
-      </div>
-
-      <span class="dossier-tag">ARQUIVO CONFIDENCIAL // SPRINT 03 // ARQUITETURA COMPUTACIONAL</span>
-      <h1 id="splash-heading" class="splash-title">CRUZADINHA: PROTOCOLO GOTHAM</h1>
-
-      <p class="splash-briefing">
-        Um conjunto de <strong>14 termos fundamentais de Arquitetura Computacional</strong> foi criptografado na matriz central. Analise cada pista forense, preencha as casas em letras maiúsculas sem acentos ou espaços e valide suas descobertas para decifrar o dossiê completo.
-      </p>
-
-      <div class="tactical-rules-grid">
-        <div class="rule-item">
-          <span class="rule-item-key">[01] ENTRADA DIRETA</span>
-          <p class="rule-item-desc">Clique em qualquer casa ativa e digite de <strong>A a Z</strong>. O cursor avança automaticamente na palavra.</p>
+        <div class="nav-brand-text">
+          <strong>PROTOCOLO GOTHAM</strong>
+          <span>ARQUITETURA COMPUTACIONAL // SPRINT 3</span>
         </div>
-        <div class="rule-item">
-          <span class="rule-item-key">[02] INTERSEÇÕES</span>
-          <p class="rule-item-desc">Clique novamente na mesma casa cruzada para alternar entre <strong>Horizontal</strong> e <strong>Vertical</strong>.</p>
-        </div>
-        <div class="rule-item">
-          <span class="rule-item-key">[03] VERIFICAÇÃO</span>
-          <p class="rule-item-desc">Use <strong>Conferir</strong> para destacar acertos em verde terminal e erros em vermelho carmesim.</p>
-        </div>
-      </div>
-
-      <button id="btn-start" class="btn-start-investigation" type="button">
-        <span>INICIAR INVESTIGAÇÃO</span>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square">
-          <path d="M5 12h14M13 6l6 6-6 6" />
-        </svg>
       </button>
+
+      <nav class="nav-links" aria-label="Navegação Principal">
+        <button class="nav-tab-btn active" type="button" data-nav="home">Dossiê Central</button>
+        <button class="nav-tab-btn" type="button" data-nav="crossword">Cruzadinha Hardware</button>
+        <button class="nav-tab-btn" type="button" data-nav="logic">Portas Lógicas</button>
+        <button class="nav-tab-btn" type="button" data-nav="circuits">Circuitos &amp; Exercícios</button>
+        <button id="btn-toggle-audio" class="nav-sound-btn" type="button" title="Alternar efeitos sonoros">🔊</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ========================================================================
+       PÁGINA 0: TELA HOME (DOSSIÊ CENTRAL)
+       ======================================================================== -->
+  <main id="view-home" class="page-view active-view">
+    <div class="home-hero-wrapper">
+      <section class="home-dossier" aria-labelledby="home-main-heading">
+        <div class="dossier-classification">
+          <span>GCPD // DIVISÃO DE SISTEMAS DIGITAIS</span>
+          <span class="stamp-classified">[ ARQUIVO CONFIDENCIAL ]</span>
+        </div>
+
+        <div class="home-emblem-wrap">
+          <svg class="home-emblem-svg" viewBox="0 0 320 120" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Emblema Tático Morcego">
+            <path d="M160 22 L152 6 L147 26 L136 29 L112 14 L64 8 L12 20 L38 40 L24 54 L66 64 L56 80 L108 78 L138 98 L160 114 L182 98 L212 78 L264 80 L254 64 L296 54 L282 40 L308 20 L256 8 L208 14 L184 29 L173 26 L168 6 L160 22 Z" fill="#c8102e" stroke="#ff3b5c" stroke-width="1.5" />
+            <path d="M160 32 L144 37 L116 22 L76 18 L48 25 L64 38 L52 46 L86 54 L79 65 L116 64 L144 82 L160 95 L176 82 L204 64 L241 65 L234 54 L268 46 L256 38 L272 25 L244 18 L204 22 L176 37 L160 32 Z" fill="#09070a" opacity="0.48" />
+          </svg>
+        </div>
+
+        <span class="home-kicker">PROTOCOLO GOTHAM // ARQUITETURA COMPUTACIONAL</span>
+        <h1 id="home-main-heading" class="home-title">CENTRAL DE INVESTIGAÇÃO DE HARDWARE &amp; LÓGICA DIGITAL</h1>
+
+        <p class="home-desc">
+          Bem-vindo ao terminal tático da disciplina de <strong>Arquitetura Computacional</strong>. Selecione um dos módulos operacionais abaixo para decifrar os componentes internos do processador, testar seus conhecimentos nas <strong>6 portas lógicas fundamentais</strong> ou construir e validar <strong>circuitos digitais</strong> em tempo real.
+        </p>
+
+        <!-- Três Botões Principais de Ação -->
+        <div class="home-actions-grid">
+          <button class="home-action-card" type="button" data-nav="crossword">
+            <span class="action-card-code">[ MÓDULO 01 // MATRIZ 18×17 ]</span>
+            <span class="action-card-title">CRUZADINHA HARDWARE</span>
+            <span class="action-card-sub">
+              Decifre os 14 termos essenciais de CPU, barramentos, registradores e memórias cruzados no tabuleiro forense.
+            </span>
+            <span class="action-card-cta">ACESSAR TABULEIRO →</span>
+          </button>
+
+          <button class="home-action-card" type="button" data-nav="logic" data-subtab="quiz">
+            <span class="action-card-code">[ MÓDULO 02 // 12 QUESTÕES ]</span>
+            <span class="action-card-title">PORTAS LÓGICAS</span>
+            <span class="action-card-sub">
+              Enfrente o Quiz Investigativo sobre AND, OR, NOT, NAND, NOR e XOR, suas analogias cotidianas e tabelas-verdade.
+            </span>
+            <span class="action-card-cta">INICIAR QUIZ LÓGICO →</span>
+          </button>
+
+          <button class="home-action-card" type="button" data-nav="circuits">
+            <span class="action-card-code">[ MÓDULO 03 // BANCADA INTERATIVA ]</span>
+            <span class="action-card-title">CIRCUITOS &amp; EXERCÍCIOS</span>
+            <span class="action-card-sub">
+              Monte circuitos conectando chaves, portas lógicas e LEDs, visualize a tabela-verdade ao vivo e valide 7 desafios práticos.
+            </span>
+            <span class="action-card-cta">ABRIR LABORATÓRIO →</span>
+          </button>
+        </div>
+
+        <!-- Botão Discreto para o Guia Teórico -->
+        <div class="home-theory-footer">
+          <button class="btn-discrete-theory" type="button" data-nav="logic" data-subtab="theory">
+            <span>[ ? ] GUIA TEÓRICO: AS 6 PORTAS FUNDAMENTAIS</span>
+          </button>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- ========================================================================
+       PÁGINA 1: CRUZADINHA DE ARQUITETURA COMPUTACIONAL (SPRINT 3)
+       ======================================================================== -->
+  <section id="view-crossword" class="page-view" aria-label="Cruzadinha de Arquitetura Computacional">
+    <div class="cw-hud tactical-card">
+      <div class="cw-hud-title">
+        <h2>Cruzadinha de Arquitetura Computacional</h2>
+        <p>SPRINT 3 // 14 TERMOS CRUZADOS // MAIÚSCULAS SEM ACENTO E SEM ESPAÇO</p>
+      </div>
+
+      <div class="cw-score-box" aria-live="polite">
+        <span class="cw-score-label">PALAVRAS DECIFRADAS</span>
+        <div id="cw-score-text" class="cw-score-value">0 de 14 palavras</div>
+        <div id="cw-score-bars" class="cw-score-bars"></div>
+      </div>
+
+      <div class="cw-actions">
+        <button id="btn-cw-check" class="btn-crimson" type="button">✓ Conferir</button>
+        <button id="btn-cw-reset" class="btn-dark" type="button">↺ Reiniciar</button>
+      </div>
+    </div>
+
+    <div id="cw-banner" class="cw-banner info" role="status" aria-live="polite">
+      <span id="cw-banner-msg"></span>
+      <button id="btn-cw-close-banner" type="button" style="background:none;border:none;color:inherit;font-family:var(--font-mono);cursor:pointer;font-weight:700;">[FECHAR]</button>
+    </div>
+
+    <div class="cw-workspace">
+      <!-- Tabuleiro 18x17 -->
+      <div class="cw-board-panel tactical-card">
+        <div class="cw-active-clue-bar">
+          <div class="cw-active-clue-meta">
+            <span id="cw-active-head" class="cw-active-clue-head">03 · HORIZONTAL [16 LETRAS]</span>
+            <p id="cw-active-desc" class="cw-active-clue-text">
+              Chip único que integra processador, memória e periféricos para sistemas embarcados.
+            </p>
+          </div>
+          <button id="btn-cw-dir" class="btn-dark" type="button" style="padding:0.4rem 0.65rem;font-size:0.7rem;">Direção ⇄</button>
+        </div>
+
+        <div class="cw-grid-frame">
+          <div id="cw-grid" class="cw-grid" role="grid" aria-label="Grade da Cruzadinha 18 por 17"></div>
+        </div>
+
+        <div class="cw-legend">
+          <span>VERDE: PALAVRA CORRETA · VERMELHO: INCORRETA / INCOMPLETA</span>
+          <span>CLIQUE DUPLO NA CASA CRUZADA: ALTERNA H/V · SETAS: NAVEGA</span>
+        </div>
+      </div>
+
+      <!-- Pistas Horizontais e Verticais -->
+      <aside class="cw-clues-col">
+        <div class="cw-clue-card tactical-card">
+          <div class="cw-clue-card-head">
+            <h3>→ HORIZONTAIS</h3>
+            <span style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-muted);">6 PALAVRAS</span>
+          </div>
+          <ul id="cw-clues-h" class="cw-clue-list"></ul>
+        </div>
+
+        <div class="cw-clue-card tactical-card">
+          <div class="cw-clue-card-head">
+            <h3>↓ VERTICAIS</h3>
+            <span style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-muted);">8 PALAVRAS</span>
+          </div>
+          <ul id="cw-clues-v" class="cw-clue-list"></ul>
+        </div>
+      </aside>
     </div>
   </section>
 
   <!-- ========================================================================
-       INTERFACE PRINCIPAL DO JOGO
+       PÁGINA 2: PORTAS LÓGICAS (QUIZ INVESTIGATIVO + GUIA TEÓRICO COMPLETO)
        ======================================================================== -->
-  <div class="app-shell">
-    <!-- Barra Tática Superior (HUD) -->
-    <header class="tactical-hud">
-      <div class="hud-brand">
-        <svg class="hud-bat-icon" viewBox="0 0 320 120" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <path
-            d="M160 22 L152 6 L147 26 L136 29 L112 14 L64 8 L12 20 L38 40 L24 54 L66 64 L56 80 L108 78 L138 98 L160 114 L182 98 L212 78 L264 80 L254 64 L296 54 L282 40 L308 20 L256 8 L208 14 L184 29 L173 26 L168 6 L160 22 Z"
-            fill="#c8102e"
-          />
-        </svg>
-        <div class="hud-title-group">
-          <h1>Cruzadinha de Arquitetura Computacional</h1>
-          <span>PROTOCOLO GOTHAM // SPRINT 03 // MATRIZ 18×17</span>
-        </div>
+  <section id="view-logic" class="page-view" aria-label="Portas Lógicas - Quiz e Guia Teórico">
+    <div class="logic-subnav tactical-card">
+      <div class="logic-subnav-tabs">
+        <button id="tab-quiz-btn" class="subtab-btn active" type="button">Quiz Investigativo (12 Questões)</button>
+        <button id="tab-theory-btn" class="subtab-btn" type="button">Guia Teórico Completo (As 6 Portas)</button>
       </div>
-
-      <!-- Contador de Acertos -->
-      <div class="hud-score-panel" aria-live="polite">
-        <span class="score-label">PALAVRAS DECIFRADAS</span>
-        <div id="score-counter" class="score-value">0 de 14 palavras</div>
-        <div id="score-segments" class="score-segments" aria-hidden="true"></div>
-      </div>
-
-      <!-- Botões de Ação -->
-      <div class="hud-actions">
-        <button id="btn-check" class="btn-tactical btn-check" type="button" title="Verificar palavras preenchidas">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-          <span>Conferir</span>
-        </button>
-
-        <button id="btn-reset" class="btn-tactical btn-reset" type="button" title="Limpar todo o tabuleiro">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-            <path d="M3 3v5h5" />
-          </svg>
-          <span>Reiniciar</span>
-        </button>
-
-        <button id="btn-sound" class="btn-tactical btn-icon-only" type="button" title="Alternar áudio tático" aria-label="Alternar áudio tático">
-          🔊
-        </button>
-
-        <button id="btn-dossier" class="btn-tactical btn-icon-only" type="button" title="Abrir dossiê de instruções" aria-label="Abrir dossiê de instruções">
-          [ ? ]
-        </button>
-      </div>
-    </header>
-
-    <!-- Banner de Status Dinâmico -->
-    <div id="status-banner" class="status-banner info" role="status" aria-live="polite">
-      <span id="status-text"></span>
-      <button id="btn-close-banner" type="button" style="background:none;border:none;color:inherit;font-family:var(--font-mono);cursor:pointer;font-weight:700;">[FECHAR]</button>
+      <button class="btn-crimson" type="button" data-nav="circuits">Ir para Laboratório de Circuitos →</button>
     </div>
 
-    <!-- Área Principal: Tabuleiro + Colunas de Pistas -->
-    <main class="workspace-grid">
-      <!-- Coluna do Tabuleiro -->
-      <section class="board-panel" aria-label="Tabuleiro da Cruzadinha">
-        <!-- Barra da Pista Selecionada -->
-        <div class="active-clue-bar">
-          <div class="active-clue-meta">
-            <div class="active-clue-header">
-              <span id="active-clue-badge">03 · HORIZONTAL</span>
-              <span id="active-clue-len" class="active-clue-length">[16 LETRAS]</span>
-            </div>
-            <p id="active-clue-desc" class="active-clue-text">
-              Chip único que reúne processador, memória e periféricos para automação de sistemas embarcados.
-            </p>
+    <!-- SUB-ABA A: QUIZ INVESTIGATIVO (12 QUESTÕES) -->
+    <div id="logic-subview-quiz" class="quiz-panel tactical-card">
+      <div class="quiz-header-bar">
+        <span id="quiz-progress-label" class="quiz-progress-text">QUESTÃO 01 DE 12</span>
+        <span id="quiz-score-label" class="quiz-score-pill">ACERTOS: 0 / 12</span>
+      </div>
+
+      <div class="quiz-progress-track">
+        <div id="quiz-progress-bar" class="quiz-progress-fill" style="width: 8.33%;"></div>
+      </div>
+
+      <div id="quiz-body-container">
+        <span id="quiz-category" class="quiz-category-tag">ANALOGIA DO COTIDIANO</span>
+        <h3 id="quiz-question" class="quiz-question-text"></h3>
+        <div id="quiz-options" class="quiz-options-list"></div>
+        <div id="quiz-feedback" class="quiz-feedback-box"></div>
+      </div>
+
+      <div class="quiz-footer-controls">
+        <button id="btn-quiz-restart" class="btn-dark" type="button">↺ Reiniciar Quiz</button>
+        <button id="btn-quiz-next" class="btn-crimson" type="button" style="display:none;">Próxima Questão →</button>
+      </div>
+    </div>
+
+    <!-- SUB-ABA B: GUIA TEÓRICO COMPLETO (AS 6 PORTAS FUNDAMENTAIS) -->
+    <div id="logic-subview-theory" style="display:none;">
+      <div class="theory-section-header">
+        <h3>As Seis Portas Lógicas Fundamentais</h3>
+        <p>
+          Segundo a organização teórica apresentada nos materiais de Lógica Digital, existem três portas lógicas básicas e três portas derivadas. As portas derivadas são construídas combinando-se as funções básicas com inversores.
+        </p>
+      </div>
+
+      <!-- 2.1 Portas Lógicas Básicas -->
+      <div class="theory-section-header" style="border-color: var(--border-strong);">
+        <h3 style="font-size:1.22rem;color:var(--crimson-bright);">2.1 Portas Lógicas Básicas</h3>
+      </div>
+
+      <div class="gates-theory-grid">
+        <!-- Porta AND -->
+        <article class="gate-theory-card tactical-card">
+          <div class="gate-card-top">
+            <h4>Porta AND (E)</h4>
+            <span class="gate-expr-badge">X = A · B ou X = AB</span>
           </div>
-          <button id="btn-toggle-dir" class="btn-toggle-dir" type="button" title="Alternar entre Horizontal e Vertical">
-            Direção ⇄
-          </button>
+          <div class="gate-diagram-box">
+            <svg width="210" height="80" viewBox="0 0 210 80" aria-label="Diagrama Porta AND">
+              <line x1="15" y1="25" x2="65" y2="25" stroke="#9ca3b5" stroke-width="2.5" />
+              <line x1="15" y1="55" x2="65" y2="55" stroke="#9ca3b5" stroke-width="2.5" />
+              <path d="M65 14 H102 A26 26 0 0 1 102 66 H65 Z" fill="#14171f" stroke="#e61938" stroke-width="2.8" />
+              <line x1="128" y1="40" x2="190" y2="40" stroke="#1ed760" stroke-width="2.5" />
+              <text x="6" y="29" fill="#eef0f5" font-family="Courier Prime" font-size="13" font-weight="bold">A</text>
+              <text x="6" y="59" fill="#eef0f5" font-family="Courier Prime" font-size="13" font-weight="bold">B</text>
+              <text x="195" y="44" fill="#1ed760" font-family="Courier Prime" font-size="13" font-weight="bold">X</text>
+            </svg>
+          </div>
+          <p class="gate-theory-desc">
+            A função <strong>AND</strong> produz saída verdadeira (<strong>1</strong>) se, e somente se, todas as suas entradas forem verdadeiras.
+          </p>
+          <div class="gate-theory-analogy">
+            <strong>Analogia Cotidiana:</strong> Assemelha-se a uma catraca de acesso da faculdade que só libera a passagem se o cadastro estiver ativo <strong>E</strong> a leitura da digital for confirmada.
+          </div>
+          <div class="gate-theory-visual-note">
+            <strong>Característica Visual:</strong> Corpo reto na parte traseira com a frente arredondada, sem bolinha na saída.
+          </div>
+          <table class="truth-table-mini">
+            <thead><tr><th>A</th><th>B</th><th>X = A · B</th></tr></thead>
+            <tbody>
+              <tr><td>0</td><td>0</td><td>0</td></tr>
+              <tr><td>0</td><td>1</td><td>0</td></tr>
+              <tr><td>1</td><td>0</td><td>0</td></tr>
+              <tr><td>1</td><td>1</td><td class="out-one">1</td></tr>
+            </tbody>
+          </table>
+        </article>
+
+        <!-- Porta OR -->
+        <article class="gate-theory-card tactical-card">
+          <div class="gate-card-top">
+            <h4>Porta OR (OU)</h4>
+            <span class="gate-expr-badge">X = A + B</span>
+          </div>
+          <div class="gate-diagram-box">
+            <svg width="210" height="80" viewBox="0 0 210 80" aria-label="Diagrama Porta OR">
+              <line x1="15" y1="25" x2="72" y2="25" stroke="#9ca3b5" stroke-width="2.5" />
+              <line x1="15" y1="55" x2="72" y2="55" stroke="#9ca3b5" stroke-width="2.5" />
+              <path d="M62 14 Q78 40 62 66 Q106 66 134 40 Q106 14 62 14 Z" fill="#14171f" stroke="#e61938" stroke-width="2.8" />
+              <line x1="134" y1="40" x2="190" y2="40" stroke="#1ed760" stroke-width="2.5" />
+              <text x="6" y="29" fill="#eef0f5" font-family="Courier Prime" font-size="13" font-weight="bold">A</text>
+              <text x="6" y="59" fill="#eef0f5" font-family="Courier Prime" font-size="13" font-weight="bold">B</text>
+              <text x="195" y="44" fill="#1ed760" font-family="Courier Prime" font-size="13" font-weight="bold">X</text>
+            </svg>
+          </div>
+          <p class="gate-theory-desc">
+            A função <strong>OR</strong> produz saída verdadeira (<strong>1</strong>) se pelo menos uma das suas entradas for verdadeira. Em lógica booleana, o sinal <strong>+</strong> indica "OU", logo <strong>1 + 1 = 1</strong> ("verdadeiro ou verdadeiro" continua verdadeiro).
+          </p>
+          <div class="gate-theory-analogy">
+            <strong>Analogia Cotidiana:</strong> Funciona de maneira análoga a um sistema de alarme de incêndio de um prédio que dispara se o sensor do 1º andar <strong>OU</strong> o do 2º andar acusar fumaça.
+          </div>
+          <div class="gate-theory-visual-note">
+            <strong>Característica Visual:</strong> Corpo curvo terminando em um bico pontiagudo na saída.
+          </div>
+          <table class="truth-table-mini">
+            <thead><tr><th>A</th><th>B</th><th>X = A + B</th></tr></thead>
+            <tbody>
+              <tr><td>0</td><td>0</td><td>0</td></tr>
+              <tr><td>0</td><td>1</td><td class="out-one">1</td></tr>
+              <tr><td>1</td><td>0</td><td class="out-one">1</td></tr>
+              <tr><td>1</td><td>1</td><td class="out-one">1</td></tr>
+            </tbody>
+          </table>
+        </article>
+
+        <!-- Porta NOT -->
+        <article class="gate-theory-card tactical-card">
+          <div class="gate-card-top">
+            <h4>Porta NOT (Inversor)</h4>
+            <span class="gate-expr-badge">X = <span class="overline">A</span> ou X = !A</span>
+          </div>
+          <div class="gate-diagram-box">
+            <svg width="210" height="80" viewBox="0 0 210 80" aria-label="Diagrama Porta NOT">
+              <line x1="20" y1="40" x2="68" y2="40" stroke="#9ca3b5" stroke-width="2.5" />
+              <polygon points="68,16 68,64 118,40" fill="#14171f" stroke="#e61938" stroke-width="2.8" />
+              <circle cx="124" cy="40" r="6" fill="#14171f" stroke="#e61938" stroke-width="2.8" />
+              <line x1="130" y1="40" x2="188" y2="40" stroke="#1ed760" stroke-width="2.5" />
+              <text x="8" y="44" fill="#eef0f5" font-family="Courier Prime" font-size="13" font-weight="bold">A</text>
+              <text x="193" y="44" fill="#1ed760" font-family="Courier Prime" font-size="13" font-weight="bold">X</text>
+            </svg>
+          </div>
+          <p class="gate-theory-desc">
+            A função <strong>NOT</strong> possui uma única entrada e uma única saída, invertendo o estado lógico recebido (lê-se "<em>A barrado</em>").
+          </p>
+          <div class="gate-theory-analogy">
+            <strong>Analogia Cotidiana:</strong> Assemelha-se a um sensor de iluminação de corredor que acende a luz quando <strong>NÃO</strong> há claridade suficiente.
+          </div>
+          <div class="gate-theory-visual-note">
+            <strong>Característica Visual:</strong> Formato triangular com uma pequena bolinha na ponta (símbolo gráfico universal de inversão lógica).
+          </div>
+          <table class="truth-table-mini">
+            <thead><tr><th>A</th><th>X = <span class="overline">A</span></th></tr></thead>
+            <tbody>
+              <tr><td>0</td><td class="out-one">1</td></tr>
+              <tr><td>1</td><td>0</td></tr>
+            </tbody>
+          </table>
+        </article>
+      </div>
+
+      <!-- 2.2 Portas Lógicas Derivadas -->
+      <div class="theory-section-header" style="border-color: var(--border-strong);">
+        <h3 style="font-size:1.22rem;color:var(--crimson-bright);">2.2 Portas Lógicas Derivadas</h3>
+      </div>
+
+      <div class="gates-theory-grid">
+        <!-- Porta NAND -->
+        <article class="gate-theory-card tactical-card">
+          <div class="gate-card-top">
+            <h4>Porta NAND (NÃO E)</h4>
+            <span class="gate-expr-badge">X = <span class="overline">A · B</span></span>
+          </div>
+          <div class="gate-diagram-box">
+            <svg width="210" height="80" viewBox="0 0 210 80" aria-label="Diagrama Porta NAND">
+              <line x1="15" y1="25" x2="62" y2="25" stroke="#9ca3b5" stroke-width="2.5" />
+              <line x1="15" y1="55" x2="62" y2="55" stroke="#9ca3b5" stroke-width="2.5" />
+              <path d="M62 14 H98 A26 26 0 0 1 98 66 H62 Z" fill="#14171f" stroke="#e61938" stroke-width="2.8" />
+              <circle cx="130" cy="40" r="6" fill="#14171f" stroke="#e61938" stroke-width="2.8" />
+              <line x1="136" y1="40" x2="190" y2="40" stroke="#1ed760" stroke-width="2.5" />
+              <text x="6" y="29" fill="#eef0f5" font-family="Courier Prime" font-size="13" font-weight="bold">A</text>
+              <text x="6" y="59" fill="#eef0f5" font-family="Courier Prime" font-size="13" font-weight="bold">B</text>
+              <text x="195" y="44" fill="#1ed760" font-family="Courier Prime" font-size="13" font-weight="bold">X</text>
+            </svg>
+          </div>
+          <p class="gate-theory-desc">
+            A porta <strong>NAND</strong> é a combinação de uma porta AND seguida por um inversor NOT. Sua saída é o inverso exato da porta AND, resultando em <strong>0</strong> apenas quando todas as entradas forem 1.
+          </p>
+          <div class="gate-theory-analogy">
+            <strong>Analogia Cotidiana:</strong> Corresponde à lógica de uma prensa industrial que só opera se as duas mãos do operador <strong>não</strong> estiverem simultaneamente nos botões de segurança.
+          </div>
+          <table class="truth-table-mini">
+            <thead><tr><th>A</th><th>B</th><th>X = <span class="overline">A · B</span></th></tr></thead>
+            <tbody>
+              <tr><td>0</td><td>0</td><td class="out-one">1</td></tr>
+              <tr><td>0</td><td>1</td><td class="out-one">1</td></tr>
+              <tr><td>1</td><td>0</td><td class="out-one">1</td></tr>
+              <tr><td>1</td><td>1</td><td>0</td></tr>
+            </tbody>
+          </table>
+        </article>
+
+        <!-- Porta NOR -->
+        <article class="gate-theory-card tactical-card">
+          <div class="gate-card-top">
+            <h4>Porta NOR (NÃO OU)</h4>
+            <span class="gate-expr-badge">X = <span class="overline">A + B</span></span>
+          </div>
+          <div class="gate-diagram-box">
+            <svg width="210" height="80" viewBox="0 0 210 80" aria-label="Diagrama Porta NOR">
+              <line x1="15" y1="25" x2="68" y2="25" stroke="#9ca3b5" stroke-width="2.5" />
+              <line x1="15" y1="55" x2="68" y2="55" stroke="#9ca3b5" stroke-width="2.5" />
+              <path d="M58 14 Q74 40 58 66 Q102 66 128 40 Q102 14 58 14 Z" fill="#14171f" stroke="#e61938" stroke-width="2.8" />
+              <circle cx="134" cy="40" r="6" fill="#14171f" stroke="#e61938" stroke-width="2.8" />
+              <line x1="140" y1="40" x2="190" y2="40" stroke="#1ed760" stroke-width="2.5" />
+              <text x="6" y="29" fill="#eef0f5" font-family="Courier Prime" font-size="13" font-weight="bold">A</text>
+              <text x="6" y="59" fill="#eef0f5" font-family="Courier Prime" font-size="13" font-weight="bold">B</text>
+              <text x="195" y="44" fill="#1ed760" font-family="Courier Prime" font-size="13" font-weight="bold">X</text>
+            </svg>
+          </div>
+          <p class="gate-theory-desc">
+            A porta <strong>NOR</strong> é formada por uma porta OR seguida por uma inversão NOT. A saída resulta em <strong>1</strong> apenas quando todas as entradas forem 0.
+          </p>
+          <div class="gate-theory-analogy">
+            <strong>Analogia Cotidiana:</strong> Equivale à condição em que uma luz verde no painel indica "tudo certo" apenas quando <strong>nenhum</strong> alarme do sistema estiver acionado.
+          </div>
+          <table class="truth-table-mini">
+            <thead><tr><th>A</th><th>B</th><th>X = <span class="overline">A + B</span></th></tr></thead>
+            <tbody>
+              <tr><td>0</td><td>0</td><td class="out-one">1</td></tr>
+              <tr><td>0</td><td>1</td><td>0</td></tr>
+              <tr><td>1</td><td>0</td><td>0</td></tr>
+              <tr><td>1</td><td>1</td><td>0</td></tr>
+            </tbody>
+          </table>
+        </article>
+
+        <!-- Porta XOR -->
+        <article class="gate-theory-card tactical-card">
+          <div class="gate-card-top">
+            <h4>Porta XOR (OU Exclusivo)</h4>
+            <span class="gate-expr-badge">X = A ⊕ B</span>
+          </div>
+          <div class="gate-diagram-box">
+            <svg width="210" height="80" viewBox="0 0 210 80" aria-label="Diagrama Porta XOR">
+              <line x1="15" y1="25" x2="64" y2="25" stroke="#9ca3b5" stroke-width="2.5" />
+              <line x1="15" y1="55" x2="64" y2="55" stroke="#9ca3b5" stroke-width="2.5" />
+              <path d="M56 14 Q72 40 56 66" fill="none" stroke="#e61938" stroke-width="2.8" />
+              <path d="M66 14 Q82 40 66 66 Q108 66 136 40 Q108 14 66 14 Z" fill="#14171f" stroke="#e61938" stroke-width="2.8" />
+              <line x1="136" y1="40" x2="190" y2="40" stroke="#1ed760" stroke-width="2.5" />
+              <text x="6" y="29" fill="#eef0f5" font-family="Courier Prime" font-size="13" font-weight="bold">A</text>
+              <text x="6" y="59" fill="#eef0f5" font-family="Courier Prime" font-size="13" font-weight="bold">B</text>
+              <text x="195" y="44" fill="#1ed760" font-family="Courier Prime" font-size="13" font-weight="bold">X</text>
+            </svg>
+          </div>
+          <p class="gate-theory-desc">
+            A porta <strong>XOR</strong> aceita uma ou outra entrada em nível alto, mas recusa quando ambas as entradas forem 1 simultaneamente. Atua como um <strong>detector de diferenças</strong> (saída 1 quando as entradas forem distintas).
+          </p>
+          <div class="gate-theory-analogy">
+            <strong>Analogia Cotidiana:</strong> Assemelha-se a uma lâmpada de escada acionada por dois interruptores paralelos (um embaixo e outro em cima).
+          </div>
+          <table class="truth-table-mini">
+            <thead><tr><th>A</th><th>B</th><th>X = A ⊕ B</th></tr></thead>
+            <tbody>
+              <tr><td>0</td><td>0</td><td>0</td></tr>
+              <tr><td>0</td><td>1</td><td class="out-one">1</td></tr>
+              <tr><td>1</td><td>0</td><td class="out-one">1</td></tr>
+              <tr><td>1</td><td>1</td><td>0</td></tr>
+            </tbody>
+          </table>
+        </article>
+      </div>
+
+      <!-- 2.3 Resumo Comparativo das Portas de Duas Entradas -->
+      <div class="theory-section-header" style="border-color: var(--border-strong);">
+        <h3 style="font-size:1.22rem;color:var(--crimson-bright);">2.3 Resumo Comparativo das Portas de Duas Entradas</h3>
+        <p>Consolidação da saída de cada porta lógica para a sequência binária padrão de duas entradas (00, 01, 10, 11):</p>
+      </div>
+
+      <div class="summary-table-wrap tactical-card">
+        <table class="summary-table">
+          <thead>
+            <tr>
+              <th>Porta</th>
+              <th>Expressão</th>
+              <th>00</th>
+              <th>01</th>
+              <th>10</th>
+              <th>11</th>
+              <th>Regra de Ouro em Uma Frase</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>AND</strong></td>
+              <td>A · B</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0</td>
+              <td style="color:var(--terminal-green);font-weight:700;">1</td>
+              <td>Saída 1 só se todas as entradas forem 1.</td>
+            </tr>
+            <tr>
+              <td><strong>OR</strong></td>
+              <td>A + B</td>
+              <td>0</td>
+              <td style="color:var(--terminal-green);font-weight:700;">1</td>
+              <td style="color:var(--terminal-green);font-weight:700;">1</td>
+              <td style="color:var(--terminal-green);font-weight:700;">1</td>
+              <td>Saída 1 se pelo menos uma entrada for 1.</td>
+            </tr>
+            <tr>
+              <td><strong>NAND</strong></td>
+              <td><span class="overline">A · B</span></td>
+              <td style="color:var(--terminal-green);font-weight:700;">1</td>
+              <td style="color:var(--terminal-green);font-weight:700;">1</td>
+              <td style="color:var(--terminal-green);font-weight:700;">1</td>
+              <td>0</td>
+              <td>Saída 0 só se todas as entradas forem 1.</td>
+            </tr>
+            <tr>
+              <td><strong>NOR</strong></td>
+              <td><span class="overline">A + B</span></td>
+              <td style="color:var(--terminal-green);font-weight:700;">1</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>Saída 1 só se todas as entradas forem 0.</td>
+            </tr>
+            <tr>
+              <td><strong>XOR</strong></td>
+              <td>A ⊕ B</td>
+              <td>0</td>
+              <td style="color:var(--terminal-green);font-weight:700;">1</td>
+              <td style="color:var(--terminal-green);font-weight:700;">1</td>
+              <td>0</td>
+              <td>Saída 1 se as entradas forem diferentes.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="validation-props-box tactical-card">
+        <h4>Propriedades Especiais para Validação</h4>
+        <ul>
+          <li><strong>AND</strong> e <strong>NAND</strong> possuem colunas de saída perfeitamente opostas.</li>
+          <li><strong>OR</strong> e <strong>NOR</strong> possuem colunas de saída perfeitamente opostas.</li>
+          <li><strong>OR</strong> e <strong>XOR</strong> diferem unicamente na última linha da tabela (<strong>11</strong>).</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================
+       PÁGINA 3: EXERCÍCIOS PRÁTICOS E SIMULADOR DE CIRCUITOS DE PORTAS LÓGICAS
+       ======================================================================== -->
+  <section id="view-circuits" class="page-view" aria-label="Simulador de Circuitos e Exercícios Práticos">
+    <div class="lab-layout">
+      <!-- Coluna Esquerda: Lista dos 7 Exercícios Práticos Guiados -->
+      <aside class="exercises-sidebar tactical-card">
+        <div class="exercises-sidebar-head">
+          <h3>7 Exercícios Práticos</h3>
+          <span id="ex-completed-badge" class="ex-progress-badge">0 / 7 CONCLUÍDOS</span>
         </div>
 
-        <!-- Grade 18x17 -->
-        <div class="crossword-frame">
-          <div id="crossword-grid" class="crossword-grid" role="grid" aria-label="Grade 18 por 17"></div>
-        </div>
+        <div id="exercise-list" class="exercise-list"></div>
 
-        <!-- Legenda de Cores e Atalhos -->
-        <div class="board-legend">
-          <div class="legend-indicators">
-            <span class="legend-dot"><i style="background:#c8102e;"></i>Palavra Ativa</span>
-            <span class="legend-dot"><i style="background:#1ed760;"></i>Correta</span>
-            <span class="legend-dot"><i style="background:#e61938;"></i>Incorreta / Incompleta</span>
-          </div>
-          <span>SETAS: NAVEGAR · BACKSPACE: APAGAR · TAB: PRÓXIMA PISTA</span>
-        </div>
-      </section>
+        <!-- Painel do Exercício Selecionado -->
+        <div class="active-exercise-box">
+          <h4 id="ex-detail-title">1. Catraca da Faculdade (AND)</h4>
+          <p id="ex-detail-desc">
+            A catraca só libera passagem (X = 1) se o cadastro estiver ativo (A = 1) E a leitura da digital for confirmada (B = 1). Monte o circuito e valide todas as combinações.
+          </p>
 
-      <!-- Coluna das Pistas (Horizontais e Verticais) -->
-      <aside class="clues-panel" aria-label="Lista de Pistas">
-        <div class="clue-group-card">
-          <div class="clue-group-header">
-            <h2 class="clue-group-title">
-              <span>→</span> HORIZONTAIS
-            </h2>
-            <span class="clue-group-count">6 TERMOS</span>
+          <div class="ex-action-stack">
+            <button id="btn-load-ex-template" class="btn-dark" type="button" style="width:100%;">
+              ⚡ Carregar Entradas/Saída do Exercício
+            </button>
+            <button id="btn-validate-circuit" class="btn-crimson" type="button" style="width:100%;">
+              ✓ Validar Circuito
+            </button>
           </div>
-          <ul id="clues-horizontal" class="clue-list"></ul>
-        </div>
 
-        <div class="clue-group-card">
-          <div class="clue-group-header">
-            <h2 class="clue-group-title">
-              <span>↓</span> VERTICAIS
-            </h2>
-            <span class="clue-group-count">8 TERMOS</span>
-          </div>
-          <ul id="clues-vertical" class="clue-list"></ul>
+          <div id="ex-validation-log" class="validation-result-log" role="status" aria-live="polite"></div>
         </div>
       </aside>
-    </main>
-  </div>
 
-  <!-- Modal de Vitória (Quando 14 de 14 palavras são acertadas) -->
-  <div id="victory-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="victory-title">
-    <div class="victory-modal">
-      <div class="victory-stamp">[ ✓ ] ENIGMA DECIFRADO</div>
-      <h2 id="victory-title">Protocolo Gotham Concluído</h2>
-      <p>
-        Excelente trabalho de investigação. Todos os <strong>14 conceitos de Arquitetura Computacional</strong> foram identificados e validados com precisão no tabuleiro.
-      </p>
-      <div class="victory-stats">
-        <div class="stat-box">
-          <strong>14 / 14</strong>
-          <span>Acertos</span>
+      <!-- Coluna Direita: Bancada Interativa + Tabela-Verdade Dinâmica -->
+      <div class="workbench-col">
+        <!-- Barra de Ferramentas para Adicionar Componentes -->
+        <div class="palette-toolbar tactical-card">
+          <div class="palette-group">
+            <span class="palette-label">Entradas:</span>
+            <button class="comp-add-btn io-btn" type="button" data-add-node="SWITCH" data-label="A">+ Switch A</button>
+            <button class="comp-add-btn io-btn" type="button" data-add-node="SWITCH" data-label="B">+ Switch B</button>
+            <button class="comp-add-btn io-btn" type="button" data-add-node="SWITCH" data-label="C">+ Switch C</button>
+          </div>
+
+          <div class="palette-group">
+            <span class="palette-label">Portas:</span>
+            <button class="comp-add-btn" type="button" data-add-node="AND">+ AND</button>
+            <button class="comp-add-btn" type="button" data-add-node="OR">+ OR</button>
+            <button class="comp-add-btn" type="button" data-add-node="NOT">+ NOT</button>
+            <button class="comp-add-btn" type="button" data-add-node="NAND">+ NAND</button>
+            <button class="comp-add-btn" type="button" data-add-node="NOR">+ NOR</button>
+            <button class="comp-add-btn" type="button" data-add-node="XOR">+ XOR</button>
+          </div>
+
+          <div class="palette-group">
+            <span class="palette-label">Saídas:</span>
+            <button class="comp-add-btn io-btn" type="button" data-add-node="LED" data-label="X">+ LED X</button>
+            <button class="comp-add-btn io-btn" type="button" data-add-node="LED" data-label="Y">+ LED Y</button>
+            <button id="btn-clear-workbench" class="btn-dark" type="button" style="padding:0.38rem 0.65rem;font-size:0.72rem;">Limpar Bancada</button>
+          </div>
         </div>
-        <div class="stat-box">
-          <strong id="stat-time">00:00</strong>
-          <span>Tempo</span>
+
+        <!-- Palco Interativo de Montagem (SVG Wires + HTML Nodes) -->
+        <div id="canvas-stage" class="canvas-stage-wrapper" aria-label="Bancada de Montagem de Circuitos">
+          <svg id="wires-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+          <div id="nodes-layer"></div>
         </div>
-        <div class="stat-box">
-          <strong id="stat-checks">1</strong>
-          <span>Verificações</span>
+
+        <div class="workbench-bottom-bar tactical-card">
+          <span id="workbench-hint">
+            DICA: Clique no pino de saída (direita) de um bloco e depois no pino de entrada (esquerda) de outro para ligar um fio. Clique em um fio para removê-lo.
+          </span>
+          <span style="color:var(--terminal-green);">SINAL 1: VERDE · SINAL 0: CINZA</span>
+        </div>
+
+        <!-- Painel de Tabela-Verdade Dinâmica -->
+        <div class="live-tt-panel tactical-card">
+          <h4>Tabela-Verdade Dinâmica do Circuito Montado</h4>
+          <div id="live-tt-container" style="overflow-x:auto;"></div>
         </div>
       </div>
-      <div class="victory-actions">
-        <button id="btn-inspect-board" class="btn-tactical btn-reset" type="button">Analisar Tabuleiro</button>
-        <button id="btn-play-again" class="btn-tactical btn-check" type="button">Nova Investigação</button>
+    </div>
+  </section>
+
+  <!-- Modal de Vitória da Cruzadinha -->
+  <div id="cw-victory-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="cw-win-title">
+    <div class="modal-card">
+      <span class="stamp-classified" style="border-color:var(--terminal-green);color:var(--terminal-green);background:rgba(30,215,96,0.12);">
+        [ ✓ ] MATRIZ DECIFRADA
+      </span>
+      <h3 id="cw-win-title">14 de 14 Palavras Corretas</h3>
+      <p>
+        Todos os conceitos fundamentais de Arquitetura Computacional foram validados com sucesso no tabuleiro.
+      </p>
+      <div style="display:flex;gap:0.65rem;justify-content:center;flex-wrap:wrap;">
+        <button id="btn-close-cw-modal" class="btn-dark" type="button">Analisar Tabuleiro</button>
+        <button id="btn-restart-cw-modal" class="btn-crimson" type="button">Jogar Novamente</button>
       </div>
     </div>
   </div>
@@ -1236,662 +2459,415 @@
   <script>
     /**
      * ============================================================================
-     * CRUZADINHA DE ARQUITETURA COMPUTACIONAL — PROTOCOLO GOTHAM (2022 NOIR)
-     * Disciplina: Arquitetura Computacional · Sprint 3
+     * PROTOCOLO GOTHAM — ARQUITETURA COMPUTACIONAL & PORTAS LÓGICAS
+     * Aplicação SPA em HTML, CSS e JavaScript Puros
      * ============================================================================
      */
 
-    // Dimensões exatas do tabuleiro (18 linhas x 17 colunas, indexadas a partir de 0)
-    const NUM_ROWS = 18;
-    const NUM_COLS = 17;
-
-    // Definição completa das 14 palavras cruzadas (6 Horizontais + 8 Verticais)
-    const WORDS_DATA = [
-      // HORIZONTAIS
-      {
-        id: '3H',
-        number: 3,
-        direction: 'H',
-        answer: 'MICROCONTROLADOR',
-        row: 4,
-        col: 0,
-        clue: 'Chip único que reúne processador, memória e periféricos para automação de sistemas embarcados.'
-      },
-      {
-        id: '8H',
-        number: 8,
-        direction: 'H',
-        answer: 'CPU',
-        row: 6,
-        col: 5,
-        clue: 'Principal componente do computador que interpreta instruções e coordena o processamento dos dados.'
-      },
-      {
-        id: '10H',
-        number: 10,
-        direction: 'H',
-        answer: 'QUADCORE',
-        row: 8,
-        col: 9,
-        clue: 'Processador equipado com quatro núcleos físicos independentes para executar tarefas simultâneas.'
-      },
-      {
-        id: '11H',
-        number: 11,
-        direction: 'H',
-        answer: 'ADDRESSBUS',
-        row: 10,
-        col: 0,
-        clue: 'Via unidirecional por onde o processador envia a localização exata na memória.'
-      },
-      {
-        id: '12H',
-        number: 12,
-        direction: 'H',
-        answer: 'DATABUS',
-        row: 12,
-        col: 3,
-        clue: 'Trilha bidirecional que transporta informações binárias entre processador, memória e periféricos.'
-      },
-      {
-        id: '13H',
-        number: 13,
-        direction: 'H',
-        answer: 'ROM',
-        row: 14,
-        col: 3,
-        clue: 'Memória não volátil gravada de fábrica que guarda o firmware inicial do sistema.'
-      },
-
-      // VERTICAIS
-      {
-        id: '1V',
-        number: 1,
-        direction: 'V',
-        answer: 'EEPROM',
-        row: 1,
-        col: 9,
-        clue: 'Memória não volátil que pode ser apagada e regravada eletricamente byte a byte.'
-      },
-      {
-        id: '2V',
-        number: 2,
-        direction: 'V',
-        answer: 'ULA',
-        row: 3,
-        col: 11,
-        clue: 'Circuito interno do processador responsável por realizar cálculos matemáticos e comparações booleanas.'
-      },
-      {
-        id: '3V',
-        number: 3,
-        direction: 'V',
-        answer: 'MEMORIADEMASSA',
-        row: 4,
-        col: 0,
-        clue: 'Armazenamento secundário permanente de alta capacidade, como discos rígidos e unidades de estado sólido.'
-      },
-      {
-        id: '4V',
-        number: 4,
-        direction: 'V',
-        answer: 'REGISTRADORES',
-        row: 4,
-        col: 3,
-        clue: 'Pequenas células ultrarrápidas dentro do processador que guardam operandos e instruções em execução.'
-      },
-      {
-        id: '5V',
-        number: 5,
-        direction: 'V',
-        answer: 'CACHE',
-        row: 4,
-        col: 5,
-        clue: 'Memória estática intermediária e veloz que reduz o tempo de busca junto ao processador.'
-      },
-      {
-        id: '6V',
-        number: 6,
-        direction: 'V',
-        answer: 'DUALCORE',
-        row: 4,
-        col: 13,
-        clue: 'Arquitetura de processador que possui exatamente dois núcleos de execução no mesmo chip.'
-      },
-      {
-        id: '7V',
-        number: 7,
-        direction: 'V',
-        answer: 'RAM',
-        row: 4,
-        col: 15,
-        clue: 'Memória principal volátil que guarda programas abertos e perde tudo ao desligar a energia.'
-      },
-      {
-        id: '9V',
-        number: 9,
-        direction: 'V',
-        answer: 'UC',
-        row: 6,
-        col: 7,
-        clue: 'Setor do processador que busca, decodifica instruções e emite sinais para sincronizar os componentes.'
-      }
-    ];
-
-    // Estado global da aplicação
-    const state = {
-      gridMap: [], // Matriz 18x17 contendo metadados de cada célula
-      activeWordId: '3H',
-      focusedCell: { row: 4, col: 0 },
-      wordStatus: {}, // 'pending' | 'correct' | 'wrong'
-      soundEnabled: true,
-      startTime: null,
-      checkCount: 0,
-      solvedCelebrated: false
-    };
-
-    // Referências de DOM
-    const dom = {
-      splashScreen: document.getElementById('splash-screen'),
-      btnStart: document.getElementById('btn-start'),
-      gridContainer: document.getElementById('crossword-grid'),
-      cluesH: document.getElementById('clues-horizontal'),
-      cluesV: document.getElementById('clues-vertical'),
-      activeBadge: document.getElementById('active-clue-badge'),
-      activeLen: document.getElementById('active-clue-len'),
-      activeDesc: document.getElementById('active-clue-desc'),
-      btnToggleDir: document.getElementById('btn-toggle-dir'),
-      scoreCounter: document.getElementById('score-counter'),
-      scoreSegments: document.getElementById('score-segments'),
-      btnCheck: document.getElementById('btn-check'),
-      btnReset: document.getElementById('btn-reset'),
-      btnSound: document.getElementById('btn-sound'),
-      btnDossier: document.getElementById('btn-dossier'),
-      statusBanner: document.getElementById('status-banner'),
-      statusText: document.getElementById('status-text'),
-      btnCloseBanner: document.getElementById('btn-close-banner'),
-      victoryModal: document.getElementById('victory-modal'),
-      statTime: document.getElementById('stat-time'),
-      statChecks: document.getElementById('stat-checks'),
-      btnInspectBoard: document.getElementById('btn-inspect-board'),
-      btnPlayAgain: document.getElementById('btn-play-again')
-    };
-
     /* ==========================================================================
-       SINTETIZADOR DE ÁUDIO TÁTICO (WEB AUDIO API — SEM ARQUIVOS EXTERNOS)
+       MÓDULO 0: ÁUDIO TÁTICO (WEB AUDIO API) & CHUVA NOIR (CANVAS 2D)
        ========================================================================== */
     const SoundFX = (() => {
+      let enabled = true;
       let ctx = null;
 
-      function getContext() {
+      function getCtx() {
         if (!ctx) {
           const AudioCtx = window.AudioContext || window.webkitAudioContext;
           if (AudioCtx) ctx = new AudioCtx();
         }
-        if (ctx && ctx.state === 'suspended') {
-          ctx.resume().catch(() => {});
-        }
+        if (ctx && ctx.state === 'suspended') ctx.resume().catch(() => {});
         return ctx;
       }
 
-      function playTone(freq, type, duration, gainVal = 0.06, delay = 0) {
-        if (!state.soundEnabled) return;
-        const audioCtx = getContext();
-        if (!audioCtx) return;
-
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
+      function beep(freq, type, dur, vol = 0.05, delay = 0) {
+        if (!enabled) return;
+        const c = getCtx();
+        if (!c) return;
+        const osc = c.createOscillator();
+        const g = c.createGain();
         osc.type = type;
-        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + delay);
-
-        gain.gain.setValueAtTime(0.0001, audioCtx.currentTime + delay);
-        gain.gain.exponentialRampToValueAtTime(gainVal, audioCtx.currentTime + delay + 0.012);
-        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + delay + duration);
-
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-
-        osc.start(audioCtx.currentTime + delay);
-        osc.stop(audioCtx.currentTime + delay + duration + 0.02);
+        osc.frequency.setValueAtTime(freq, c.currentTime + delay);
+        g.gain.setValueAtTime(0.0001, c.currentTime + delay);
+        g.gain.exponentialRampToValueAtTime(vol, c.currentTime + delay + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + delay + dur);
+        osc.connect(g);
+        g.connect(c.destination);
+        osc.start(c.currentTime + delay);
+        osc.stop(c.currentTime + delay + dur + 0.02);
       }
 
       return {
-        typeKey() {
-          playTone(520, 'triangle', 0.045, 0.045);
+        toggle() {
+          enabled = !enabled;
+          return enabled;
         },
-        deleteKey() {
-          playTone(260, 'sine', 0.05, 0.04);
+        click() { beep(440, 'triangle', 0.045, 0.04); },
+        key() { beep(540, 'triangle', 0.04, 0.04); },
+        wire() { beep(620, 'sine', 0.07, 0.05); },
+        success() {
+          beep(330, 'triangle', 0.16, 0.06, 0);
+          beep(440, 'triangle', 0.2, 0.06, 0.09);
+          beep(659.25, 'triangle', 0.35, 0.07, 0.18);
         },
-        selectWord() {
-          playTone(390, 'sine', 0.06, 0.035);
-        },
-        startProtocol() {
-          playTone(110, 'sawtooth', 0.45, 0.07, 0);
-          playTone(164.81, 'triangle', 0.55, 0.06, 0.08);
-        },
-        checkPartial() {
-          playTone(330, 'triangle', 0.14, 0.06, 0);
-          playTone(293.66, 'triangle', 0.18, 0.06, 0.11);
-        },
-        victory() {
-          playTone(261.63, 'triangle', 0.25, 0.07, 0);
-          playTone(329.63, 'triangle', 0.25, 0.07, 0.1);
-          playTone(392.00, 'triangle', 0.3, 0.07, 0.2);
-          playTone(523.25, 'triangle', 0.55, 0.08, 0.32);
+        error() {
+          beep(220, 'sawtooth', 0.18, 0.05, 0);
+          beep(185, 'sawtooth', 0.22, 0.05, 0.12);
         }
       };
     })();
 
-    /* ==========================================================================
-       EFEITO VISUAL DE CHUVA NOIR (CANVAS 2D)
-       ========================================================================== */
-    function initRainEffect() {
+    function initRainCanvas() {
       const canvas = document.getElementById('rain-canvas');
       if (!canvas) return;
       const ctx = canvas.getContext('2d');
-
-      let width = 0;
-      let height = 0;
-      let drops = [];
+      let w = 0, h = 0, drops = [];
 
       function resize() {
-        width = canvas.width = window.innerWidth;
-        height = canvas.height = window.innerHeight;
-        const count = Math.min(130, Math.floor(width / 12));
+        w = canvas.width = window.innerWidth;
+        h = canvas.height = window.innerHeight;
+        const count = Math.min(125, Math.floor(w / 12));
         drops = Array.from({ length: count }, () => ({
-          x: Math.random() * width,
-          y: Math.random() * height,
+          x: Math.random() * w,
+          y: Math.random() * h,
           len: 14 + Math.random() * 22,
           speed: 7 + Math.random() * 8,
-          alpha: 0.08 + Math.random() * 0.22
+          alpha: 0.07 + Math.random() * 0.2
         }));
       }
 
       window.addEventListener('resize', resize);
       resize();
 
-      function animate() {
-        ctx.clearRect(0, 0, width, height);
+      function loop() {
+        ctx.clearRect(0, 0, w, h);
         ctx.lineWidth = 1;
-
         for (let i = 0; i < drops.length; i++) {
           const d = drops[i];
-          ctx.strokeStyle = `rgba(180, 195, 220, ${d.alpha})`;
+          ctx.strokeStyle = `rgba(185, 200, 225, ${d.alpha})`;
           ctx.beginPath();
           ctx.moveTo(d.x, d.y);
-          ctx.lineTo(d.x - 2.2, d.y + d.len);
+          ctx.lineTo(d.x - 2, d.y + d.len);
           ctx.stroke();
-
           d.y += d.speed;
-          d.x -= 0.9;
-
-          if (d.y > height) {
+          d.x -= 0.85;
+          if (d.y > h) {
             d.y = -d.len;
-            d.x = Math.random() * (width + 40);
+            d.x = Math.random() * (w + 30);
           }
         }
-        requestAnimationFrame(animate);
+        requestAnimationFrame(loop);
       }
-
-      animate();
+      loop();
     }
 
     /* ==========================================================================
-       CONSTRUÇÃO DA MATRIZ LÓGICA E RENDERIZAÇÃO DO TABULEIRO
+       NAVEGAÇÃO ENTRE PÁGINAS E SUB-ABAS
        ========================================================================== */
-    function buildGridStructure() {
-      // Inicializa matriz 18x17 vazia
-      state.gridMap = Array.from({ length: NUM_ROWS }, (_, r) =>
-        Array.from({ length: NUM_COLS }, (_, c) => ({
-          row: r,
-          col: c,
-          active: false,
-          expectedChar: '',
-          clueNumber: null,
-          words: [], // IDs das palavras que passam por esta célula
-          element: null,
-          input: null
+    function navigateTo(pageId, subtab = null) {
+      document.querySelectorAll('.page-view').forEach((sec) => {
+        sec.classList.toggle('active-view', sec.id === `view-${pageId}`);
+      });
+
+      document.querySelectorAll('.nav-tab-btn').forEach((btn) => {
+        btn.classList.toggle('active', btn.dataset.nav === pageId);
+      });
+
+      if (pageId === 'logic' && subtab) {
+        switchLogicSubtab(subtab);
+      }
+
+      if (pageId === 'circuits') {
+        requestAnimationFrame(() => renderWires());
+      }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      SoundFX.click();
+    }
+
+    function switchLogicSubtab(subtab) {
+      const isQuiz = subtab === 'quiz';
+      document.getElementById('tab-quiz-btn').classList.toggle('active', isQuiz);
+      document.getElementById('tab-theory-btn').classList.toggle('active', !isQuiz);
+      document.getElementById('logic-subview-quiz').style.display = isQuiz ? 'block' : 'none';
+      document.getElementById('logic-subview-theory').style.display = isQuiz ? 'none' : 'block';
+    }
+
+    /* ==========================================================================
+       MÓDULO 1: CRUZADINHA DE ARQUITETURA COMPUTACIONAL (MATRIZ 18x17)
+       ========================================================================== */
+    const CW_ROWS = 18;
+    const CW_COLS = 17;
+
+    // 14 palavras cruzadas com 100% das interseções verificadas na matriz 18x17
+    const CW_WORDS = [
+      // HORIZONTAIS
+      {
+        id: '3H', number: 3, dir: 'H', answer: 'MICROCONTROLADOR', row: 4, col: 0,
+        clue: 'Chip único que integra processador, memória e periféricos para sistemas embarcados.'
+      },
+      {
+        id: '9H', number: 9, dir: 'H', answer: 'QUADCORE', row: 8, col: 9,
+        clue: 'Processador com quatro núcleos físicos trabalhando em paralelo.'
+      },
+      {
+        id: '10H', number: 10, dir: 'H', answer: 'ADDRESSBUS', row: 10, col: 0,
+        clue: 'Via unidirecional que transporta a localização física de onde ler ou gravar.'
+      },
+      {
+        id: '12H', number: 12, dir: 'H', answer: 'DATABUS', row: 12, col: 3,
+        clue: 'Via bidirecional por onde trafegam as informações entre processador e memória.'
+      },
+      {
+        id: '13H', number: 13, dir: 'H', answer: 'ROM', row: 14, col: 3,
+        clue: 'Memória não volátil gravada de fábrica, usada na inicialização do sistema.'
+      },
+      {
+        id: '14H', number: 14, dir: 'H', answer: 'RAM', row: 6, col: 14,
+        clue: 'Memória principal volátil de leitura e escrita que perde dados sem energia.'
+      },
+
+      // VERTICAIS
+      {
+        id: '1V', number: 1, dir: 'V', answer: 'EEPROM', row: 1, col: 9,
+        clue: 'Memória não volátil que pode ser apagada e regravada eletricamente byte a byte.'
+      },
+      {
+        id: '2V', number: 2, dir: 'V', answer: 'ULA', row: 3, col: 11,
+        clue: 'Parte da CPU que faz as contas e as operações lógicas.'
+      },
+      {
+        id: '3V', number: 3, dir: 'V', answer: 'MEMORIADEMASSA', row: 4, col: 0,
+        clue: 'Armazenamento permanente de grande capacidade para arquivos e sistemas, como HD e SSD.'
+      },
+      {
+        id: '4V', number: 4, dir: 'V', answer: 'CPU', row: 4, col: 2,
+        clue: 'Cérebro do computador responsável por buscar, decodificar e executar instruções.'
+      },
+      {
+        id: '5V', number: 5, dir: 'V', answer: 'REGISTRADORES', row: 4, col: 3,
+        clue: 'Memórias ultrarrápidas internas ao processador que guardam dados em execução imediata.'
+      },
+      {
+        id: '6V', number: 6, dir: 'V', answer: 'CACHE', row: 4, col: 5,
+        clue: 'Memória intermediária de altíssima velocidade entre o processador e a memória principal.'
+      },
+      {
+        id: '7V', number: 7, dir: 'V', answer: 'DUALCORE', row: 4, col: 13,
+        clue: 'Arquitetura de processador equipada com dois núcleos de processamento independentes.'
+      },
+      {
+        id: '11V', number: 11, dir: 'V', answer: 'UC', row: 10, col: 8,
+        clue: 'Componente do processador que coordena o fluxo de dados e decodifica instruções.'
+      }
+    ];
+
+    const cwState = {
+      grid: [],
+      activeWordId: '3H',
+      focused: { row: 4, col: 0 },
+      status: {}
+    };
+
+    function initCrossword() {
+      cwState.grid = Array.from({ length: CW_ROWS }, (_, r) =>
+        Array.from({ length: CW_COLS }, (_, c) => ({
+          row: r, col: c, active: false, expected: '', number: null, words: [], el: null, input: null
         }))
       );
 
-      // Mapeia cada uma das 14 palavras nas respectivas células
-      WORDS_DATA.forEach((wordObj) => {
-        state.wordStatus[wordObj.id] = 'pending';
-
-        for (let i = 0; i < wordObj.answer.length; i++) {
-          const r = wordObj.direction === 'H' ? wordObj.row : wordObj.row + i;
-          const c = wordObj.direction === 'H' ? wordObj.col + i : wordObj.col;
-          const cell = state.gridMap[r][c];
-
+      CW_WORDS.forEach((w) => {
+        cwState.status[w.id] = 'pending';
+        for (let i = 0; i < w.answer.length; i++) {
+          const r = w.dir === 'H' ? w.row : w.row + i;
+          const c = w.dir === 'H' ? w.col + i : w.col;
+          const cell = cwState.grid[r][c];
           cell.active = true;
-          cell.expectedChar = wordObj.answer[i];
-          if (!cell.words.includes(wordObj.id)) {
-            cell.words.push(wordObj.id);
-          }
-          if (i === 0) {
-            cell.clueNumber = wordObj.number;
-          }
+          cell.expected = w.answer[i];
+          if (!cell.words.includes(w.id)) cell.words.push(w.id);
+          if (i === 0) cell.number = w.number;
         }
       });
-    }
 
-    function renderGrid() {
-      dom.gridContainer.innerHTML = '';
+      const gridEl = document.getElementById('cw-grid');
+      gridEl.innerHTML = '';
 
-      for (let r = 0; r < NUM_ROWS; r++) {
-        for (let c = 0; c < NUM_COLS; c++) {
-          const cellData = state.gridMap[r][c];
-
-          if (!cellData.active) {
-            const voidDiv = document.createElement('div');
-            voidDiv.className = 'grid-cell-void';
-            voidDiv.setAttribute('aria-hidden', 'true');
-            dom.gridContainer.appendChild(voidDiv);
+      for (let r = 0; r < CW_ROWS; r++) {
+        for (let c = 0; c < CW_COLS; c++) {
+          const cell = cwState.grid[r][c];
+          if (!cell.active) {
+            const v = document.createElement('div');
+            v.className = 'cw-cell-void';
+            gridEl.appendChild(v);
             continue;
           }
 
-          const cellDiv = document.createElement('div');
-          cellDiv.className = 'grid-cell-active';
-          cellDiv.dataset.row = r;
-          cellDiv.dataset.col = c;
-
-          if (cellData.clueNumber !== null) {
-            const numSpan = document.createElement('span');
-            numSpan.className = 'cell-number';
-            numSpan.textContent = cellData.clueNumber;
-            cellDiv.appendChild(numSpan);
+          const div = document.createElement('div');
+          div.className = 'cw-cell-active';
+          if (cell.number !== null) {
+            const num = document.createElement('span');
+            num.className = 'cw-cell-num';
+            num.textContent = cell.number;
+            div.appendChild(num);
           }
 
-          const input = document.createElement('input');
-          input.type = 'text';
-          input.maxLength = 2; // Permite capturar sobrescrita fluida de 1 letra
-          input.className = 'cell-input';
-          input.autocomplete = 'off';
-          input.autocorrect = 'off';
-          input.autocapitalize = 'characters';
-          input.spellcheck = false;
-          input.setAttribute('aria-label', `Linha ${r + 1}, Coluna ${c + 1}`);
-          input.dataset.row = r;
-          input.dataset.col = c;
+          const inp = document.createElement('input');
+          inp.type = 'text';
+          inp.maxLength = 2;
+          inp.className = 'cw-input';
+          inp.autocomplete = 'off';
+          inp.spellcheck = false;
+          inp.setAttribute('aria-label', `Linha ${r + 1}, Coluna ${c + 1}`);
 
-          // Eventos de mouse/toque e teclado
-          input.addEventListener('mousedown', (e) => handleCellMouseDown(e, r, c));
-          input.addEventListener('focus', () => handleCellFocus(r, c));
-          input.addEventListener('input', (e) => handleCellInput(e, r, c));
-          input.addEventListener('keydown', (e) => handleCellKeyDown(e, r, c));
+          inp.addEventListener('mousedown', () => {
+            if (cwState.focused.row === r && cwState.focused.col === c && cell.words.length > 1) {
+              const alt = cell.words.find((id) => id !== cwState.activeWordId);
+              if (alt) {
+                cwState.activeWordId = alt;
+                updateCrosswordHighlights();
+                SoundFX.click();
+              }
+            }
+          });
 
-          cellDiv.appendChild(input);
-          dom.gridContainer.appendChild(cellDiv);
+          inp.addEventListener('focus', () => {
+            cwState.focused = { row: r, col: c };
+            if (!cell.words.includes(cwState.activeWordId)) {
+              const cur = getCwWord(cwState.activeWordId);
+              const sameDir = cell.words.map(getCwWord).find((w) => w.dir === cur.dir);
+              cwState.activeWordId = sameDir ? sameDir.id : cell.words[0];
+            }
+            updateCrosswordHighlights();
+          });
 
-          cellData.element = cellDiv;
-          cellData.input = input;
+          inp.addEventListener('input', (e) => {
+            const clean = (e.target.value || '')
+              .normalize('NFD')
+              .replace(/[\u0300-\u036f]/g, '')
+              .toUpperCase()
+              .replace(/[^A-Z]/g, '')
+              .slice(-1);
+            e.target.value = clean;
+            if (clean) {
+              cell.el.classList.remove('cell-wrong');
+              SoundFX.key();
+              moveCwStep(r, c, 1);
+            }
+          });
+
+          inp.addEventListener('keydown', (e) => {
+            if (e.key === 'Backspace') {
+              e.preventDefault();
+              cell.el.classList.remove('cell-wrong');
+              if (inp.value) {
+                inp.value = '';
+                SoundFX.click();
+              } else {
+                moveCwStep(r, c, -1, true);
+              }
+            } else if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+              e.preventDefault();
+              navigateCwArrow(e.key, r, c);
+            } else if (e.key === 'Tab') {
+              e.preventDefault();
+              const idx = CW_WORDS.findIndex((w) => w.id === cwState.activeWordId);
+              const next = CW_WORDS[(idx + (e.shiftKey ? -1 : 1) + CW_WORDS.length) % CW_WORDS.length];
+              selectCwWord(next.id, true);
+            }
+          });
+
+          div.appendChild(inp);
+          gridEl.appendChild(div);
+          cell.el = div;
+          cell.input = inp;
         }
       }
-    }
 
-    function renderClues() {
-      dom.cluesH.innerHTML = '';
-      dom.cluesV.innerHTML = '';
+      // Renderiza pistas numeradas
+      const listH = document.getElementById('cw-clues-h');
+      const listV = document.getElementById('cw-clues-v');
+      listH.innerHTML = '';
+      listV.innerHTML = '';
 
-      WORDS_DATA.forEach((wordObj) => {
+      CW_WORDS.forEach((w) => {
         const li = document.createElement('li');
-        li.className = 'clue-item';
-        li.dataset.wordId = wordObj.id;
-
-        const numBadge = document.createElement('span');
-        numBadge.className = 'clue-num-badge';
-        numBadge.textContent = String(wordObj.number).padStart(2, '0') + '.';
-
-        const textSpan = document.createElement('span');
-        textSpan.className = 'clue-text';
-        textSpan.textContent = wordObj.clue;
-
-        const statusTag = document.createElement('span');
-        statusTag.className = 'clue-status-tag';
-        statusTag.textContent = `${wordObj.answer.length}L`;
-
-        li.appendChild(numBadge);
-        li.appendChild(textSpan);
-        li.appendChild(statusTag);
-
+        li.className = 'cw-clue-item';
+        li.dataset.wordId = w.id;
+        li.innerHTML = `
+          <span class="cw-clue-num">${String(w.number).padStart(2, '0')}.</span>
+          <span class="cw-clue-body">${w.clue}</span>
+          <span class="cw-clue-tag">${w.answer.length}L</span>
+        `;
         li.addEventListener('click', () => {
-          selectWordById(wordObj.id, true);
-          SoundFX.selectWord();
+          selectCwWord(w.id, true);
+          SoundFX.click();
         });
-
-        if (wordObj.direction === 'H') {
-          dom.cluesH.appendChild(li);
-        } else {
-          dom.cluesV.appendChild(li);
-        }
+        (w.dir === 'H' ? listH : listV).appendChild(li);
       });
-    }
 
-    function renderScoreSegments() {
-      dom.scoreSegments.innerHTML = '';
-      for (let i = 0; i < WORDS_DATA.length; i++) {
-        const seg = document.createElement('div');
-        seg.className = 'score-seg';
-        dom.scoreSegments.appendChild(seg);
+      // Renderiza barras do placar
+      const bars = document.getElementById('cw-score-bars');
+      bars.innerHTML = '';
+      for (let i = 0; i < CW_WORDS.length; i++) {
+        const s = document.createElement('div');
+        s.className = 'cw-bar-seg';
+        bars.appendChild(s);
       }
+
+      updateCrosswordHighlights();
     }
 
-    /* ==========================================================================
-       NAVEGAÇÃO, SELEÇÃO DE PALAVRAS E INTERAÇÕES NO TABULEIRO
-       ========================================================================== */
-    function getWordById(wordId) {
-      return WORDS_DATA.find((w) => w.id === wordId) || WORDS_DATA[0];
+    function getCwWord(id) {
+      return CW_WORDS.find((w) => w.id === id) || CW_WORDS[0];
     }
 
-    function getWordCells(wordObj) {
-      const cells = [];
-      for (let i = 0; i < wordObj.answer.length; i++) {
-        const r = wordObj.direction === 'H' ? wordObj.row : wordObj.row + i;
-        const c = wordObj.direction === 'H' ? wordObj.col + i : wordObj.col;
-        cells.push(state.gridMap[r][c]);
+    function getCwWordCells(w) {
+      const arr = [];
+      for (let i = 0; i < w.answer.length; i++) {
+        const r = w.dir === 'H' ? w.row : w.row + i;
+        const c = w.dir === 'H' ? w.col + i : w.col;
+        arr.push(cwState.grid[r][c]);
       }
-      return cells;
+      return arr;
     }
 
-    /**
-     * Ao clicar em uma célula já focada que pertence a duas palavras (interseção),
-     * alterna automaticamente entre Horizontal e Vertical.
-     */
-    function handleCellMouseDown(e, row, col) {
-      const cell = state.gridMap[row][col];
-      if (!cell || !cell.active) return;
+    function selectCwWord(id, focusEmpty = false) {
+      const w = getCwWord(id);
+      cwState.activeWordId = w.id;
+      const cells = getCwWordCells(w);
+      const target = (focusEmpty && cells.find((c) => !c.input.value)) || cells[0];
+      cwState.focused = { row: target.row, col: target.col };
+      updateCrosswordHighlights();
+      target.input.focus();
+    }
 
-      const isAlreadyFocused =
-        state.focusedCell.row === row && state.focusedCell.col === col;
-
-      if (isAlreadyFocused && cell.words.length > 1) {
-        const otherWordId = cell.words.find((id) => id !== state.activeWordId);
-        if (otherWordId) {
-          state.activeWordId = otherWordId;
-          updateHighlights();
-          SoundFX.selectWord();
+    function moveCwStep(row, col, delta, clearPrev = false) {
+      const w = getCwWord(cwState.activeWordId);
+      const cells = getCwWordCells(w);
+      const idx = cells.findIndex((c) => c.row === row && c.col === col);
+      const nextIdx = idx + delta;
+      if (nextIdx >= 0 && nextIdx < cells.length) {
+        const target = cells[nextIdx];
+        if (clearPrev) {
+          target.input.value = '';
+          target.el.classList.remove('cell-wrong');
+          SoundFX.click();
         }
+        target.input.focus();
       }
     }
 
-    function handleCellFocus(row, col) {
-      const cell = state.gridMap[row][col];
-      if (!cell || !cell.active) return;
-
-      state.focusedCell = { row, col };
-
-      // Se a célula não pertence à palavra atualmente ativa, escolhe uma palavra válida
-      if (!cell.words.includes(state.activeWordId)) {
-        const currentWord = getWordById(state.activeWordId);
-        // Tenta manter a mesma direção se existir uma palavra nessa direção
-        const sameDirWord = cell.words
-          .map(getWordById)
-          .find((w) => w.direction === currentWord.direction);
-        state.activeWordId = sameDirWord ? sameDirWord.id : cell.words[0];
-      }
-
-      updateHighlights();
-    }
-
-    function selectWordById(wordId, focusFirstEmpty = false) {
-      const wordObj = getWordById(wordId);
-      state.activeWordId = wordObj.id;
-
-      const cells = getWordCells(wordObj);
-      let targetCell = cells[0];
-
-      if (focusFirstEmpty) {
-        const firstEmpty = cells.find((c) => !c.input.value);
-        if (firstEmpty) targetCell = firstEmpty;
-      }
-
-      state.focusedCell = { row: targetCell.row, col: targetCell.col };
-      updateHighlights();
-
-      if (targetCell.input) {
-        targetCell.input.focus();
-      }
-    }
-
-    function toggleDirectionAtFocusedCell() {
-      const { row, col } = state.focusedCell;
-      const cell = state.gridMap[row]?.[col];
-      if (!cell) return;
-
-      if (cell.words.length > 1) {
-        const nextWordId = cell.words.find((id) => id !== state.activeWordId);
-        if (nextWordId) {
-          state.activeWordId = nextWordId;
-          updateHighlights();
-          SoundFX.selectWord();
-          cell.input?.focus();
-        }
-      } else {
-        showBanner('Esta casa pertence apenas a uma direção.', 'info');
-      }
-    }
-
-    /**
-     * Normaliza caracteres digitados para maiúsculas A-Z sem acento
-     */
-    function sanitizeLetter(raw) {
-      if (!raw) return '';
-      const normalized = raw
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .toUpperCase()
-        .replace(/[^A-Z]/g, '');
-      return normalized.slice(-1);
-    }
-
-    function handleCellInput(e, row, col) {
-      const cell = state.gridMap[row][col];
-      const letter = sanitizeLetter(e.target.value);
-
-      e.target.value = letter;
-
-      if (letter) {
-        // Remove marcação visual de erro ao editar a célula
-        cell.element.classList.remove('cell-wrong');
-        SoundFX.typeKey();
-        moveToNextCellInWord(row, col);
-      }
-    }
-
-    function handleCellKeyDown(e, row, col) {
-      const cell = state.gridMap[row][col];
-      const activeWord = getWordById(state.activeWordId);
-
-      if (e.key === 'Backspace') {
-        e.preventDefault();
-        cell.element.classList.remove('cell-wrong');
-
-        if (cell.input.value !== '') {
-          cell.input.value = '';
-          SoundFX.deleteKey();
-        } else {
-          moveToPrevCellInWord(row, col, true);
-        }
-        return;
-      }
-
-      if (e.key === 'Delete') {
-        e.preventDefault();
-        cell.input.value = '';
-        cell.element.classList.remove('cell-wrong');
-        SoundFX.deleteKey();
-        return;
-      }
-
-      // Navegação por setas do teclado
-      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
-        e.preventDefault();
-        navigateByArrow(e.key, row, col);
-        return;
-      }
-
-      // Tab ou Enter avança para a próxima palavra da lista
-      if (e.key === 'Tab' || e.key === 'Enter') {
-        e.preventDefault();
-        const idx = WORDS_DATA.findIndex((w) => w.id === activeWord.id);
-        const nextIdx = e.shiftKey
-          ? (idx - 1 + WORDS_DATA.length) % WORDS_DATA.length
-          : (idx + 1) % WORDS_DATA.length;
-        selectWordById(WORDS_DATA[nextIdx].id, true);
-        SoundFX.selectWord();
-      }
-    }
-
-    function moveToNextCellInWord(row, col) {
-      const wordObj = getWordById(state.activeWordId);
-      const cells = getWordCells(wordObj);
-      const currentIndex = cells.findIndex((c) => c.row === row && c.col === col);
-
-      if (currentIndex >= 0 && currentIndex < cells.length - 1) {
-        const nextCell = cells[currentIndex + 1];
-        nextCell.input.focus();
-      }
-    }
-
-    function moveToPrevCellInWord(row, col, clearTarget = false) {
-      const wordObj = getWordById(state.activeWordId);
-      const cells = getWordCells(wordObj);
-      const currentIndex = cells.findIndex((c) => c.row === row && c.col === col);
-
-      if (currentIndex > 0) {
-        const prevCell = cells[currentIndex - 1];
-        if (clearTarget) {
-          prevCell.input.value = '';
-          prevCell.element.classList.remove('cell-wrong');
-          SoundFX.deleteKey();
-        }
-        prevCell.input.focus();
-      }
-    }
-
-    function navigateByArrow(key, startRow, startCol) {
-      const deltas = {
-        ArrowUp: [-1, 0],
-        ArrowDown: [1, 0],
-        ArrowLeft: [0, -1],
-        ArrowRight: [0, 1]
-      };
-      const [dr, dc] = deltas[key];
-      let r = startRow + dr;
-      let c = startCol + dc;
-
-      while (r >= 0 && r < NUM_ROWS && c >= 0 && c < NUM_COLS) {
-        const candidate = state.gridMap[r][c];
-        if (candidate && candidate.active) {
-          // Ajusta direção ativa para acompanhar o eixo da seta se possível
-          const desiredDir = dr !== 0 ? 'V' : 'H';
-          const matchingWord = candidate.words
-            .map(getWordById)
-            .find((w) => w.direction === desiredDir);
-          if (matchingWord) {
-            state.activeWordId = matchingWord.id;
-          }
-          candidate.input.focus();
+    function navigateCwArrow(key, r0, c0) {
+      const map = { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1] };
+      const [dr, dc] = map[key];
+      let r = r0 + dr, c = c0 + dc;
+      while (r >= 0 && r < CW_ROWS && c >= 0 && c < CW_COLS) {
+        const cand = cwState.grid[r][c];
+        if (cand && cand.active) {
+          const wantDir = dr !== 0 ? 'V' : 'H';
+          const match = cand.words.map(getCwWord).find((w) => w.dir === wantDir);
+          if (match) cwState.activeWordId = match.id;
+          cand.input.focus();
           return;
         }
         r += dr;
@@ -1899,259 +2875,1086 @@
       }
     }
 
-    /* ==========================================================================
-       ATUALIZAÇÃO DE DESTAQUES VISUAIS (TABULEIRO + PISTAS + BARRA ATIVA)
-       ========================================================================== */
-    function updateHighlights() {
-      const activeWord = getWordById(state.activeWordId);
-      const activeCells = getWordCells(activeWord);
+    function updateCrosswordHighlights() {
+      const w = getCwWord(cwState.activeWordId);
+      const cells = getCwWordCells(w);
 
-      // Limpa classes de foco/destaque anteriores
-      for (let r = 0; r < NUM_ROWS; r++) {
-        for (let c = 0; c < NUM_COLS; c++) {
-          const cell = state.gridMap[r][c];
-          if (cell.active && cell.element) {
-            cell.element.classList.remove('word-highlight', 'cell-focused');
+      for (let r = 0; r < CW_ROWS; r++) {
+        for (let c = 0; c < CW_COLS; c++) {
+          const cell = cwState.grid[r][c];
+          if (cell.active && cell.el) {
+            cell.el.classList.remove('word-highlight', 'cell-focused');
           }
         }
       }
 
-      // Aplica destaque na palavra ativa
-      activeCells.forEach((cell) => {
-        cell.element.classList.add('word-highlight');
-      });
+      cells.forEach((c) => c.el.classList.add('word-highlight'));
+      const foc = cwState.grid[cwState.focused.row]?.[cwState.focused.col];
+      if (foc && foc.active) foc.el.classList.add('cell-focused');
 
-      // Aplica destaque intenso na célula focada
-      const focused = state.gridMap[state.focusedCell.row]?.[state.focusedCell.col];
-      if (focused && focused.active && focused.element) {
-        focused.element.classList.add('cell-focused');
-      }
+      document.getElementById('cw-active-head').textContent =
+        `${String(w.number).padStart(2, '0')} · ${w.dir === 'H' ? 'HORIZONTAL' : 'VERTICAL'} [${w.answer.length} LETRAS]`;
+      document.getElementById('cw-active-desc').textContent = w.clue;
 
-      // Atualiza barra da pista ativa acima do tabuleiro
-      const dirLabel = activeWord.direction === 'H' ? 'HORIZONTAL' : 'VERTICAL';
-      dom.activeBadge.textContent = `${String(activeWord.number).padStart(2, '0')} · ${dirLabel}`;
-      dom.activeLen.textContent = `[${activeWord.answer.length} LETRAS]`;
-      dom.activeDesc.textContent = activeWord.clue;
-
-      // Atualiza destaque na lista de pistas
-      document.querySelectorAll('.clue-item').forEach((item) => {
-        item.classList.toggle('active-clue', item.dataset.wordId === activeWord.id);
+      document.querySelectorAll('.cw-clue-item').forEach((li) => {
+        li.classList.toggle('active-clue', li.dataset.wordId === w.id);
       });
     }
 
-    /* ==========================================================================
-       VERIFICAÇÃO (CONFERIR) E REINÍCIO (REINICIAR)
-       ========================================================================== */
-    function checkAllWords() {
-      state.checkCount += 1;
-
-      // Primeiro remove marcas antigas de validação das células
-      for (let r = 0; r < NUM_ROWS; r++) {
-        for (let c = 0; c < NUM_COLS; c++) {
-          const cell = state.gridMap[r][c];
-          if (cell.active && cell.element) {
-            cell.element.classList.remove('cell-correct', 'cell-wrong');
-          }
+    function checkCrossword() {
+      for (let r = 0; r < CW_ROWS; r++) {
+        for (let c = 0; c < CW_COLS; c++) {
+          const cell = cwState.grid[r][c];
+          if (cell.active) cell.el.classList.remove('cell-correct', 'cell-wrong');
         }
       }
 
       let correctCount = 0;
-      const correctCellsSet = new Set();
-      const wrongCellsSet = new Set();
+      const okSet = new Set();
+      const errSet = new Set();
 
-      WORDS_DATA.forEach((wordObj) => {
-        const cells = getWordCells(wordObj);
-        const typedWord = cells.map((c) => c.input.value || '').join('');
-        const isCorrect = typedWord === wordObj.answer;
-
-        if (isCorrect) {
-          correctCount += 1;
-          state.wordStatus[wordObj.id] = 'correct';
-          cells.forEach((c) => correctCellsSet.add(`${c.row},${c.col}`));
+      CW_WORDS.forEach((w) => {
+        const cells = getCwWordCells(w);
+        const typed = cells.map((c) => c.input.value || '').join('');
+        if (typed === w.answer) {
+          correctCount++;
+          cwState.status[w.id] = 'correct';
+          cells.forEach((c) => okSet.add(`${c.row},${c.col}`));
         } else {
-          state.wordStatus[wordObj.id] = 'wrong';
-          cells.forEach((c) => wrongCellsSet.add(`${c.row},${c.col}`));
+          cwState.status[w.id] = 'wrong';
+          cells.forEach((c) => errSet.add(`${c.row},${c.col}`));
         }
       });
 
-      // Aplica cores nas células:
-      // Células de palavras corretas ficam verdes (mesmo se cruzarem com palavra incompleta);
-      // Células pertencentes apenas a palavras incorretas/incompletas ficam vermelhas.
-      for (let r = 0; r < NUM_ROWS; r++) {
-        for (let c = 0; c < NUM_COLS; c++) {
-          const cell = state.gridMap[r][c];
+      for (let r = 0; r < CW_ROWS; r++) {
+        for (let c = 0; c < CW_COLS; c++) {
+          const cell = cwState.grid[r][c];
           if (!cell.active) continue;
-
-          const key = `${r},${c}`;
-          if (correctCellsSet.has(key)) {
-            cell.element.classList.add('cell-correct');
-          } else if (wrongCellsSet.has(key)) {
-            cell.element.classList.add('cell-wrong');
-          }
+          const k = `${r},${c}`;
+          if (okSet.has(k)) cell.el.classList.add('cell-correct');
+          else if (errSet.has(k)) cell.el.classList.add('cell-wrong');
         }
       }
 
-      // Atualiza estado visual dos itens na lista de pistas
-      document.querySelectorAll('.clue-item').forEach((item) => {
-        const wId = item.dataset.wordId;
-        const wordObj = getWordById(wId);
-        const status = state.wordStatus[wId];
-        const tag = item.querySelector('.clue-status-tag');
-
-        item.classList.remove('solved-clue', 'wrong-clue');
-        if (status === 'correct') {
-          item.classList.add('solved-clue');
-          tag.textContent = '[ ✓ ]';
-        } else if (status === 'wrong') {
-          item.classList.add('wrong-clue');
-          tag.textContent = `${wordObj.answer.length}L · !`;
+      document.querySelectorAll('.cw-clue-item').forEach((li) => {
+        const w = getCwWord(li.dataset.wordId);
+        const st = cwState.status[w.id];
+        const tag = li.querySelector('.cw-clue-tag');
+        li.classList.remove('solved-clue', 'wrong-clue');
+        if (st === 'correct') {
+          li.classList.add('solved-clue');
+          tag.textContent = '✓';
+        } else {
+          li.classList.add('wrong-clue');
+          tag.textContent = `${w.answer.length}L`;
         }
       });
 
-      // Atualiza contador de acertos no formato exigido: "X de 14 palavras"
-      updateScoreDisplay(correctCount);
+      const scoreEl = document.getElementById('cw-score-text');
+      scoreEl.textContent = `${correctCount} de ${CW_WORDS.length} palavras`;
+      scoreEl.classList.toggle('complete', correctCount === CW_WORDS.length);
 
-      if (correctCount === WORDS_DATA.length) {
-        SoundFX.victory();
-        showBanner(
-          `PROTOCOLO DECIFRADO: ${correctCount} de 14 palavras corretas! Todas as evidências foram confirmadas.`,
-          'victory'
-        );
-        openVictoryModal();
-      } else {
-        SoundFX.checkPartial();
-        const remaining = WORDS_DATA.length - correctCount;
-        showBanner(
-          `ANÁLISE CONCLUÍDA: ${correctCount} de 14 palavras corretas. Restam ${remaining} termo(s) para decifrar.`,
-          'info'
-        );
-      }
-    }
-
-    function updateScoreDisplay(correctCount) {
-      dom.scoreCounter.textContent = `${correctCount} de ${WORDS_DATA.length} palavras`;
-      dom.scoreCounter.classList.toggle('all-solved', correctCount === WORDS_DATA.length);
-
-      const segments = dom.scoreSegments.querySelectorAll('.score-seg');
-      segments.forEach((seg, idx) => {
+      document.querySelectorAll('.cw-bar-seg').forEach((seg, idx) => {
         seg.classList.toggle('filled', idx < correctCount);
       });
+
+      const banner = document.getElementById('cw-banner');
+      const msg = document.getElementById('cw-banner-msg');
+
+      if (correctCount === CW_WORDS.length) {
+        SoundFX.success();
+        banner.className = 'cw-banner show success';
+        msg.textContent = `PROTOCOLO CONCLUÍDO: ${correctCount} de 14 palavras corretas!`;
+        document.getElementById('cw-victory-modal').classList.add('open');
+      } else {
+        SoundFX.error();
+        banner.className = 'cw-banner show info';
+        msg.textContent = `CONFERÊNCIA REALIZADA: ${correctCount} de 14 palavras corretas. Continue preenchendo as casas em vermelho.`;
+      }
     }
 
-    function resetBoard() {
-      for (let r = 0; r < NUM_ROWS; r++) {
-        for (let c = 0; c < NUM_COLS; c++) {
-          const cell = state.gridMap[r][c];
+    function resetCrossword() {
+      for (let r = 0; r < CW_ROWS; r++) {
+        for (let c = 0; c < CW_COLS; c++) {
+          const cell = cwState.grid[r][c];
           if (cell.active) {
             cell.input.value = '';
-            cell.element.classList.remove('cell-correct', 'cell-wrong');
+            cell.el.classList.remove('cell-correct', 'cell-wrong');
           }
         }
       }
 
-      WORDS_DATA.forEach((wordObj) => {
-        state.wordStatus[wordObj.id] = 'pending';
+      CW_WORDS.forEach((w) => { cwState.status[w.id] = 'pending'; });
+      document.querySelectorAll('.cw-clue-item').forEach((li) => {
+        const w = getCwWord(li.dataset.wordId);
+        li.classList.remove('solved-clue', 'wrong-clue');
+        li.querySelector('.cw-clue-tag').textContent = `${w.answer.length}L`;
       });
 
-      document.querySelectorAll('.clue-item').forEach((item) => {
-        const wordObj = getWordById(item.dataset.wordId);
-        item.classList.remove('solved-clue', 'wrong-clue');
-        const tag = item.querySelector('.clue-status-tag');
-        if (tag) tag.textContent = `${wordObj.answer.length}L`;
-      });
-
-      state.checkCount = 0;
-      state.startTime = Date.now();
-      state.solvedCelebrated = false;
-
-      updateScoreDisplay(0);
-      dom.victoryModal.classList.remove('open');
-      showBanner('TABULEIRO REINICIADO // Todas as casas foram limpas.', 'info');
-      selectWordById('3H', false);
-      SoundFX.deleteKey();
+      const scoreEl = document.getElementById('cw-score-text');
+      scoreEl.textContent = `0 de ${CW_WORDS.length} palavras`;
+      scoreEl.classList.remove('complete');
+      document.querySelectorAll('.cw-bar-seg').forEach((s) => s.classList.remove('filled'));
+      document.getElementById('cw-banner').classList.remove('show');
+      document.getElementById('cw-victory-modal').classList.remove('open');
+      selectCwWord('3H', false);
+      SoundFX.click();
     }
 
     /* ==========================================================================
-       BANNERS E MODAIS DE INTERFACE
+       MÓDULO 2: QUIZ INVESTIGATIVO SOBRE PORTAS LÓGICAS (12 QUESTÕES)
        ========================================================================== */
-    function showBanner(message, type = 'info') {
-      dom.statusText.textContent = message;
-      dom.statusBanner.className = `status-banner visible ${type}`;
+    const QUIZ_QUESTIONS = [
+      {
+        category: 'ANALOGIA DO COTIDIANO · PORTA BÁSICA',
+        question: 'Uma catraca de acesso da faculdade só libera a passagem se o cadastro estiver ativo E a leitura da digital for confirmada. Qual porta lógica representa esse comportamento?',
+        options: ['Porta OR (OU)', 'Porta AND (E)', 'Porta XOR (OU Exclusivo)', 'Porta NOR (NÃO OU)'],
+        correctIndex: 1,
+        explanation: 'A porta AND (X = A · B) produz saída 1 se, e somente se, todas as suas entradas forem 1 — exatamente como a catraca que exige cadastro ativo E digital confirmada.'
+      },
+      {
+        category: 'ANALOGIA DO COTIDIANO · PORTA BÁSICA',
+        question: 'Um sistema de alarme de incêndio de um prédio dispara se o sensor do 1º andar OU o do 2º andar acusar fumaça. Qual porta lógica modela esse alarme?',
+        options: ['Porta NAND (NÃO E)', 'Porta NOT (Inversor)', 'Porta OR (OU)', 'Porta AND (E)'],
+        correctIndex: 2,
+        explanation: 'A porta OR (X = A + B) produz saída 1 se pelo menos uma das entradas for 1, disparando o alarme caso qualquer um dos sensores detecte fumaça.'
+      },
+      {
+        category: 'ÁLGEBRA BOOLEANA',
+        question: 'Na expressão da porta OR (X = A + B), qual é o resultado lógico da operação 1 + 1?',
+        options: ['0, pois ocorre estouro de bit (overflow)', '2, representando nível lógico duplo', '1, pois "verdadeiro ou verdadeiro" continua verdadeiro', 'Indeterminado sem um inversor'],
+        correctIndex: 2,
+        explanation: 'Em lógica booleana, o sinal + indica a operação "OU". Assim, 1 + 1 = 1, significando que "verdadeiro ou verdadeiro" permanece verdadeiro.'
+      },
+      {
+        category: 'ANALOGIA DO COTIDIANO · PORTA BÁSICA',
+        question: 'Um sensor de iluminação de corredor acende a lâmpada automaticamente quando NÃO há claridade suficiente no ambiente. Qual porta representa essa função?',
+        options: ['Porta NOT (NÃO ou Inversor)', 'Porta XOR (OU Exclusivo)', 'Porta AND (E)', 'Porta OR (OU)'],
+        correctIndex: 0,
+        explanation: 'A porta NOT (X = Ā ou !A) possui uma única entrada e inverte o estado lógico recebido: quando claridade = 0, saída = 1 (luz acesa).'
+      },
+      {
+        category: 'CARACTERÍSTICA VISUAL · SIMBOLOGIA',
+        question: 'Nos diagramas de circuitos digitais, qual elemento gráfico universal indica inversão lógica na ponta de portas como NOT, NAND e NOR?',
+        options: ['Uma linha dupla curva na entrada', 'Um corpo reto na parte traseira', 'Uma pequena bolinha na ponta da saída', 'Um bico pontiagudo sem círculos'],
+        correctIndex: 2,
+        explanation: 'A pequena bolinha na ponta da saída é o símbolo gráfico universal que indica inversão lógica.'
+      },
+      {
+        category: 'CARACTERÍSTICA VISUAL · SIMBOLOGIA',
+        question: 'Como diferenciar visualmente uma porta AND de uma porta OR em um esquemático?',
+        options: [
+          'AND tem formato triangular com bolinha; OR tem corpo quadrado.',
+          'AND tem corpo reto na traseira com frente arredondada; OR tem corpo curvo terminando em bico pontiagudo.',
+          'AND possui uma única entrada; OR possui sempre três entradas.',
+          'AND tem linha dupla curva na entrada; OR tem frente reta.'
+        ],
+        correctIndex: 1,
+        explanation: 'A porta AND apresenta corpo reto na parte traseira com frente arredondada (sem bolinha na saída), enquanto a OR possui corpo curvo terminando em um bico pontiagudo.'
+      },
+      {
+        category: 'ANALOGIA DO COTIDIANO · PORTA DERIVADA',
+        question: 'Uma prensa industrial só opera se as duas mãos do operador NÃO estiverem simultaneamente nos botões de segurança (saída 0 apenas quando A=1 e B=1). Qual é essa porta?',
+        options: ['Porta NOR (NÃO OU)', 'Porta XOR (OU Exclusivo)', 'Porta NAND (NÃO E)', 'Porta OR (OU)'],
+        correctIndex: 2,
+        explanation: 'A porta NAND combina AND seguida de NOT: sua saída resulta em 0 apenas quando todas as entradas forem 1.'
+      },
+      {
+        category: 'ANALOGIA DO COTIDIANO · PORTA DERIVADA',
+        question: 'Uma luz verde no painel de controle indica "tudo certo" (saída 1) apenas quando NENHUM alarme do sistema estiver acionado (entradas 00). Qual porta realiza isso?',
+        options: ['Porta NOR (NÃO OU)', 'Porta NAND (NÃO E)', 'Porta XOR (OU Exclusivo)', 'Porta AND (E)'],
+        correctIndex: 0,
+        explanation: 'A porta NOR (OR seguida de NOT) resulta em saída 1 exclusivamente quando todas as entradas forem 0.'
+      },
+      {
+        category: 'ANALOGIA DO COTIDIANO · PORTA DERIVADA',
+        question: 'Uma lâmpada de escada é acionada por dois interruptores paralelos (um embaixo e outro em cima), mudando de estado sempre que os interruptores estão em posições diferentes. Qual porta equivale a esse detector de diferenças?',
+        options: ['Porta AND (E)', 'Porta NOR (NÃO OU)', 'Porta XOR (OU Exclusivo)', 'Porta NAND (NÃO E)'],
+        correctIndex: 2,
+        explanation: 'A porta XOR (X = A ⊕ B) atua como detector de diferenças: produz saída 1 quando as entradas são distintas (01 ou 10) e 0 quando são iguais (00 ou 11).'
+      },
+      {
+        category: 'PROPRIEDADES ESPECIAIS DE VALIDAÇÃO',
+        question: 'Comparando as tabelas-verdade das portas OR e XOR para duas entradas (00, 01, 10, 11), em qual linha elas diferem?',
+        options: [
+          'Apenas na primeira linha (00)',
+          'Nas linhas intermediárias (01 e 10)',
+          'Unicamente na última linha da tabela (11)',
+          'Possuem colunas perfeitamente opostas em todas as linhas'
+        ],
+        correctIndex: 2,
+        explanation: 'OR e XOR têm saídas idênticas para 00 (0), 01 (1) e 10 (1), diferindo unicamente na última linha (11), onde OR = 1 e XOR = 0.'
+      },
+      {
+        category: 'PROPRIEDADES ESPECIAIS DE VALIDAÇÃO',
+        question: 'Quais pares de portas lógicas possuem colunas de saída perfeitamente opostas na tabela-verdade?',
+        options: [
+          'AND e OR / NAND e NOR',
+          'AND e NAND / OR e NOR',
+          'OR e XOR / AND e XOR',
+          'NOT e XOR / AND e NOR'
+        ],
+        correctIndex: 1,
+        explanation: 'Como NAND = NOT(AND) e NOR = NOT(OR), AND e NAND possuem colunas perfeitamente opostas, assim como OR e NOR.'
+      },
+      {
+        category: 'TABELA-VERDADE · REGRA DE OURO',
+        question: 'Qual porta lógica obedece à regra de ouro: "Saída 0 só se todas as entradas forem 1"?',
+        options: ['Porta NOR', 'Porta XOR', 'Porta NAND', 'Porta AND'],
+        correctIndex: 2,
+        explanation: 'Na porta NAND, as entradas 00, 01 e 10 produzem saída 1, e apenas a entrada 11 produz saída 0.'
+      }
+    ];
+
+    const quizState = {
+      currentIndex: 0,
+      score: 0,
+      answered: false
+    };
+
+    function renderQuizQuestion() {
+      const q = QUIZ_QUESTIONS[quizState.currentIndex];
+      quizState.answered = false;
+
+      document.getElementById('quiz-progress-label').textContent =
+        `QUESTÃO ${String(quizState.currentIndex + 1).padStart(2, '0')} DE ${QUIZ_QUESTIONS.length}`;
+      document.getElementById('quiz-score-label').textContent =
+        `ACERTOS: ${quizState.score} / ${QUIZ_QUESTIONS.length}`;
+      document.getElementById('quiz-progress-bar').style.width =
+        `${((quizState.currentIndex + 1) / QUIZ_QUESTIONS.length) * 100}%`;
+
+      document.getElementById('quiz-category').textContent = q.category;
+      document.getElementById('quiz-question').textContent = q.question;
+
+      const optsContainer = document.getElementById('quiz-options');
+      optsContainer.innerHTML = '';
+      const letters = ['A', 'B', 'C', 'D'];
+
+      q.options.forEach((optText, idx) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'quiz-option-btn';
+        btn.innerHTML = `<span class="opt-letter">${letters[idx]})</span><span>${optText}</span>`;
+        btn.addEventListener('click', () => handleQuizAnswer(idx));
+        optsContainer.appendChild(btn);
+      });
+
+      const fbBox = document.getElementById('quiz-feedback');
+      fbBox.className = 'quiz-feedback-box';
+      fbBox.textContent = '';
+
+      const nextBtn = document.getElementById('btn-quiz-next');
+      nextBtn.style.display = 'none';
+      nextBtn.textContent = quizState.currentIndex === QUIZ_QUESTIONS.length - 1
+        ? 'Ver Resultado Final →'
+        : 'Próxima Questão →';
     }
 
-    function hideBanner() {
-      dom.statusBanner.classList.remove('visible');
+    function handleQuizAnswer(selectedIndex) {
+      if (quizState.answered) return;
+      quizState.answered = true;
+
+      const q = QUIZ_QUESTIONS[quizState.currentIndex];
+      const isCorrect = selectedIndex === q.correctIndex;
+      if (isCorrect) quizState.score++;
+
+      document.getElementById('quiz-score-label').textContent =
+        `ACERTOS: ${quizState.score} / ${QUIZ_QUESTIONS.length}`;
+
+      const buttons = document.querySelectorAll('.quiz-option-btn');
+      buttons.forEach((btn, idx) => {
+        btn.disabled = true;
+        if (idx === q.correctIndex) btn.classList.add('opt-correct');
+        else if (idx === selectedIndex && !isCorrect) btn.classList.add('opt-wrong');
+      });
+
+      const fbBox = document.getElementById('quiz-feedback');
+      fbBox.className = `quiz-feedback-box visible ${isCorrect ? 'fb-correct' : 'fb-wrong'}`;
+      fbBox.innerHTML = `<strong>${isCorrect ? '[ ✓ ] EVIDÊNCIA CONFIRMADA:' : '[ ✕ ] ANÁLISE INCORRETA:'}</strong> ${q.explanation}`;
+
+      if (isCorrect) SoundFX.success();
+      else SoundFX.error();
+
+      document.getElementById('btn-quiz-next').style.display = 'inline-flex';
     }
 
-    function formatElapsedTime() {
-      if (!state.startTime) return '00:00';
-      const totalSeconds = Math.max(1, Math.floor((Date.now() - state.startTime) / 1000));
-      const mins = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
-      const secs = String(totalSeconds % 60).padStart(2, '0');
-      return `${mins}:${secs}`;
+    function advanceQuiz() {
+      if (quizState.currentIndex < QUIZ_QUESTIONS.length - 1) {
+        quizState.currentIndex++;
+        renderQuizQuestion();
+        SoundFX.click();
+      } else {
+        // Mostra resumo final dentro do painel
+        const pct = Math.round((quizState.score / QUIZ_QUESTIONS.length) * 100);
+        document.getElementById('quiz-category').textContent = 'RELATÓRIO FINAL DE INVESTIGAÇÃO';
+        document.getElementById('quiz-question').textContent =
+          `Você acertou ${quizState.score} de ${QUIZ_QUESTIONS.length} questões (${pct}% de precisão)!`;
+        document.getElementById('quiz-options').innerHTML = `
+          <div style="padding:1rem;background:#090b10;border:1px solid var(--border-strong);border-radius:7px;color:var(--text-secondary);line-height:1.6;">
+            ${quizState.score >= 10
+              ? 'Desempenho de elite! Você domina as 6 portas fundamentais, suas analogias cotidianas, expressões booleanas e propriedades de validação.'
+              : 'Bom progresso! Consulte o Guia Teórico Completo na aba ao lado ou pratique montando cada porta no Laboratório de Circuitos para consolidar 100% do conteúdo.'}
+          </div>
+        `;
+        document.getElementById('quiz-feedback').className = 'quiz-feedback-box';
+        document.getElementById('btn-quiz-next').style.display = 'none';
+        SoundFX.success();
+      }
     }
 
-    function openVictoryModal() {
-      dom.statTime.textContent = formatElapsedTime();
-      dom.statChecks.textContent = String(state.checkCount);
-      dom.victoryModal.classList.add('open');
+    function restartQuiz() {
+      quizState.currentIndex = 0;
+      quizState.score = 0;
+      renderQuizQuestion();
+      SoundFX.click();
     }
 
     /* ==========================================================================
-       INICIALIZAÇÃO E BINDING DE EVENTOS
+       MÓDULO 3: LABORATÓRIO DE CIRCUITOS & 7 EXERCÍCIOS PRÁTICOS
        ========================================================================== */
-    function init() {
-      initRainEffect();
-      buildGridStructure();
-      renderGrid();
-      renderClues();
-      renderScoreSegments();
-      updateScoreDisplay(0);
+    const LAB_EXERCISES = [
+      {
+        id: 1,
+        title: '1. Catraca da Faculdade (AND)',
+        expr: 'X = A · B',
+        desc: 'A catraca libera passagem (X = 1) somente se o cadastro estiver ativo (A = 1) E a leitura da digital for confirmada (B = 1).',
+        inputs: ['A', 'B'],
+        expectedFn: (env) => (env.A & env.B),
+        setupNodes: [
+          { type: 'SWITCH', label: 'A', x: 36, y: 95 },
+          { type: 'SWITCH', label: 'B', x: 36, y: 245 },
+          { type: 'LED', label: 'X', x: 540, y: 170 }
+        ]
+      },
+      {
+        id: 2,
+        title: '2. Sensor de Iluminação de Corredor (NOT)',
+        expr: 'X = Ā',
+        desc: 'A lâmpada do corredor acende (X = 1) quando NÃO há claridade suficiente (A = 0) e apaga quando há claridade (A = 1).',
+        inputs: ['A'],
+        expectedFn: (env) => (env.A ? 0 : 1),
+        setupNodes: [
+          { type: 'SWITCH', label: 'A', x: 40, y: 170 },
+          { type: 'LED', label: 'X', x: 540, y: 170 }
+        ]
+      },
+      {
+        id: 3,
+        title: '3. Alarme de Incêndio Predial (OR)',
+        expr: 'X = A + B',
+        desc: 'O alarme dispara (X = 1) se o sensor do 1º andar (A = 1) OU o sensor do 2º andar (B = 1) acusar fumaça.',
+        inputs: ['A', 'B'],
+        expectedFn: (env) => (env.A | env.B),
+        setupNodes: [
+          { type: 'SWITCH', label: 'A', x: 36, y: 95 },
+          { type: 'SWITCH', label: 'B', x: 36, y: 245 },
+          { type: 'LED', label: 'X', x: 540, y: 170 }
+        ]
+      },
+      {
+        id: 4,
+        title: '4. Prensa Industrial de Segurança (NAND)',
+        expr: 'X = NOT(A · B)',
+        desc: 'A prensa só opera (X = 1) se as duas mãos do operador não estiverem simultaneamente nos botões (saída 0 apenas quando A=1 e B=1).',
+        inputs: ['A', 'B'],
+        expectedFn: (env) => ((env.A & env.B) ? 0 : 1),
+        setupNodes: [
+          { type: 'SWITCH', label: 'A', x: 36, y: 95 },
+          { type: 'SWITCH', label: 'B', x: 36, y: 245 },
+          { type: 'LED', label: 'X', x: 540, y: 170 }
+        ]
+      },
+      {
+        id: 5,
+        title: '5. Painel Verde "Tudo Certo" (NOR)',
+        expr: 'X = NOT(A + B)',
+        desc: 'A luz verde no painel acende (X = 1) apenas quando NENHUM alarme estiver acionado (A = 0 e B = 0).',
+        inputs: ['A', 'B'],
+        expectedFn: (env) => ((env.A | env.B) ? 0 : 1),
+        setupNodes: [
+          { type: 'SWITCH', label: 'A', x: 36, y: 95 },
+          { type: 'SWITCH', label: 'B', x: 36, y: 245 },
+          { type: 'LED', label: 'X', x: 540, y: 170 }
+        ]
+      },
+      {
+        id: 6,
+        title: '6. Lâmpada de Escada Paralela (XOR)',
+        expr: 'X = A ⊕ B',
+        desc: 'A lâmpada acende (X = 1) quando os dois interruptores paralelos estão em estados diferentes (01 ou 10) e apaga quando são iguais.',
+        inputs: ['A', 'B'],
+        expectedFn: (env) => (env.A ^ env.B),
+        setupNodes: [
+          { type: 'SWITCH', label: 'A', x: 36, y: 95 },
+          { type: 'SWITCH', label: 'B', x: 36, y: 245 },
+          { type: 'LED', label: 'X', x: 540, y: 170 }
+        ]
+      },
+      {
+        id: 7,
+        title: '7. Circuito Derivado Combinacional (AND + NOT)',
+        expr: 'X = NOT(A · B) via AND + NOT',
+        desc: 'Monte a função NAND combinando uma porta AND seguida de uma porta NOT, comprovando que a tabela-verdade é idêntica à NAND.',
+        inputs: ['A', 'B'],
+        requireGateTypes: ['AND', 'NOT'],
+        expectedFn: (env) => ((env.A & env.B) ? 0 : 1),
+        setupNodes: [
+          { type: 'SWITCH', label: 'A', x: 32, y: 95 },
+          { type: 'SWITCH', label: 'B', x: 32, y: 245 },
+          { type: 'LED', label: 'X', x: 585, y: 170 }
+        ]
+      }
+    ];
 
-      // Seleciona palavra inicial (3 Horizontal - MICROCONTROLADOR) sem roubar foco antes do splash
-      state.activeWordId = '3H';
-      state.focusedCell = { row: 4, col: 0 };
-      updateHighlights();
+    const labState = {
+      nodes: [],
+      wires: [], // { id, fromNodeId, toNodeId, toPinIndex }
+      nextNodeId: 1,
+      pendingPin: null, // { nodeId, kind: 'out' | 'in', pinIndex }
+      activeExerciseId: 1,
+      completedExercises: new Set()
+    };
 
-      // Botão da Tela Inicial ("INICIAR INVESTIGAÇÃO")
-      dom.btnStart.addEventListener('click', () => {
-        dom.splashScreen.classList.add('hidden-splash');
-        if (!state.startTime) state.startTime = Date.now();
-        SoundFX.startProtocol();
-        setTimeout(() => {
-          selectWordById('3H', true);
-        }, 250);
+    function getGateMiniSVG(type) {
+      switch (type) {
+        case 'AND':
+          return `<svg width="64" height="36" viewBox="0 0 64 36"><path d="M12 4 H32 A14 14 0 0 1 32 32 H12 Z" fill="#0d1017" stroke="#e61938" stroke-width="2.2"/></svg>`;
+        case 'OR':
+          return `<svg width="64" height="36" viewBox="0 0 64 36"><path d="M10 4 Q20 18 10 32 Q36 32 54 18 Q36 4 10 4 Z" fill="#0d1017" stroke="#e61938" stroke-width="2.2"/></svg>`;
+        case 'NOT':
+          return `<svg width="64" height="36" viewBox="0 0 64 36"><polygon points="12,5 12,31 42,18" fill="#0d1017" stroke="#e61938" stroke-width="2.2"/><circle cx="47" cy="18" r="4" fill="#0d1017" stroke="#e61938" stroke-width="2.2"/></svg>`;
+        case 'NAND':
+          return `<svg width="64" height="36" viewBox="0 0 64 36"><path d="M10 4 H28 A14 14 0 0 1 28 32 H10 Z" fill="#0d1017" stroke="#e61938" stroke-width="2.2"/><circle cx="47" cy="18" r="4" fill="#0d1017" stroke="#e61938" stroke-width="2.2"/></svg>`;
+        case 'NOR':
+          return `<svg width="64" height="36" viewBox="0 0 64 36"><path d="M8 4 Q18 18 8 32 Q32 32 46 18 Q32 4 8 4 Z" fill="#0d1017" stroke="#e61938" stroke-width="2.2"/><circle cx="51" cy="18" r="4" fill="#0d1017" stroke="#e61938" stroke-width="2.2"/></svg>`;
+        case 'XOR':
+          return `<svg width="64" height="36" viewBox="0 0 64 36"><path d="M7 4 Q17 18 7 32" fill="none" stroke="#e61938" stroke-width="2.2"/><path d="M13 4 Q23 18 13 32 Q37 32 54 18 Q37 4 13 4 Z" fill="#0d1017" stroke="#e61938" stroke-width="2.2"/></svg>`;
+        default:
+          return '';
+      }
+    }
+
+    function addCircuitNode(type, label = '', x = null, y = null) {
+      const stage = document.getElementById('canvas-stage');
+      const stageW = stage ? stage.clientWidth || 720 : 720;
+      const offset = (labState.nodes.length % 5) * 24;
+
+      const node = {
+        id: labState.nextNodeId++,
+        type, // 'SWITCH' | 'LED' | 'AND' | 'OR' | 'NOT' | 'NAND' | 'NOR' | 'XOR'
+        label: label || type,
+        value: 0,
+        x: x !== null ? x : Math.min(stageW - 140, 220 + offset),
+        y: y !== null ? y : 90 + offset
+      };
+
+      labState.nodes.push(node);
+      evaluateCircuit();
+      renderNodes();
+      renderWires();
+      renderLiveTruthTable();
+    }
+
+    function removeCircuitNode(nodeId) {
+      labState.nodes = labState.nodes.filter((n) => n.id !== nodeId);
+      labState.wires = labState.wires.filter((w) => w.fromNodeId !== nodeId && w.toNodeId !== nodeId);
+      if (labState.pendingPin && labState.pendingPin.nodeId === nodeId) {
+        labState.pendingPin = null;
+      }
+      evaluateCircuit();
+      renderNodes();
+      renderWires();
+      renderLiveTruthTable();
+    }
+
+    function handlePinClick(nodeId, kind, pinIndex) {
+      const pending = labState.pendingPin;
+
+      // Se nenhum pino estava selecionado, seleciona este
+      if (!pending) {
+        labState.pendingPin = { nodeId, kind, pinIndex };
+        renderNodes();
+        SoundFX.click();
+        return;
+      }
+
+      // Clicou no mesmo pino -> cancela seleção
+      if (pending.nodeId === nodeId && pending.kind === kind && pending.pinIndex === pinIndex) {
+        labState.pendingPin = null;
+        renderNodes();
+        return;
+      }
+
+      // Se clicou em dois pinos do mesmo tipo (out+out ou in+in), troca a seleção
+      if (pending.kind === kind) {
+        labState.pendingPin = { nodeId, kind, pinIndex };
+        renderNodes();
+        SoundFX.click();
+        return;
+      }
+
+      // Não permite ligar saída de um bloco na entrada dele mesmo
+      if (pending.nodeId === nodeId) {
+        labState.pendingPin = null;
+        renderNodes();
+        return;
+      }
+
+      const fromNodeId = pending.kind === 'out' ? pending.nodeId : nodeId;
+      const toNodeId = pending.kind === 'in' ? pending.nodeId : nodeId;
+      const toPinIndex = pending.kind === 'in' ? pending.pinIndex : pinIndex;
+
+      // Substitui fio existente naquele pino de entrada específico
+      labState.wires = labState.wires.filter(
+        (w) => !(w.toNodeId === toNodeId && w.toPinIndex === toPinIndex)
+      );
+
+      labState.wires.push({
+        id: `${fromNodeId}->${toNodeId}:${toPinIndex}`,
+        fromNodeId,
+        toNodeId,
+        toPinIndex
       });
 
-      // Reabrir Dossiê Inicial
-      dom.btnDossier.addEventListener('click', () => {
-        dom.splashScreen.classList.remove('hidden-splash');
+      labState.pendingPin = null;
+      evaluateCircuit();
+      renderNodes();
+      renderWires();
+      renderLiveTruthTable();
+      SoundFX.wire();
+    }
+
+    /**
+     * Avalia o circuito combinacional em múltiplas passagens iterativas
+     * (permite encadear portas como AND -> NOT sem risco de loops infinitos).
+     */
+    function evaluateCircuit(overrideSwitches = null) {
+      // Define valores iniciais das chaves
+      labState.nodes.forEach((node) => {
+        if (node.type === 'SWITCH') {
+          if (overrideSwitches && Object.prototype.hasOwnProperty.call(overrideSwitches, node.label)) {
+            node.value = overrideSwitches[node.label] ? 1 : 0;
+          }
+        } else {
+          node.value = 0;
+        }
       });
 
-      // Botões Táticos Principais
-      dom.btnCheck.addEventListener('click', checkAllWords);
-      dom.btnReset.addEventListener('click', resetBoard);
-      dom.btnToggleDir.addEventListener('click', toggleDirectionAtFocusedCell);
-      dom.btnCloseBanner.addEventListener('click', hideBanner);
+      const maxIterations = labState.nodes.length + 3;
+      for (let step = 0; step < maxIterations; step++) {
+        let changed = false;
 
-      // Alternar Áudio
-      dom.btnSound.addEventListener('click', () => {
-        state.soundEnabled = !state.soundEnabled;
-        dom.btnSound.textContent = state.soundEnabled ? '🔊' : '🔇';
-        if (state.soundEnabled) SoundFX.selectWord();
-      });
+        labState.nodes.forEach((node) => {
+          if (node.type === 'SWITCH') return;
 
-      // Ações do Modal de Vitória
-      dom.btnInspectBoard.addEventListener('click', () => {
-        dom.victoryModal.classList.remove('open');
-      });
+          const getInVal = (pinIdx) => {
+            const wire = labState.wires.find((w) => w.toNodeId === node.id && w.toPinIndex === pinIdx);
+            if (!wire) return 0;
+            const src = labState.nodes.find((n) => n.id === wire.fromNodeId);
+            return src ? (src.value ? 1 : 0) : 0;
+          };
 
-      dom.btnPlayAgain.addEventListener('click', () => {
-        resetBoard();
+          let nextVal = 0;
+          if (node.type === 'LED') {
+            nextVal = getInVal(0);
+          } else if (node.type === 'NOT') {
+            nextVal = getInVal(0) ? 0 : 1;
+          } else {
+            const a = getInVal(0);
+            const b = getInVal(1);
+            switch (node.type) {
+              case 'AND': nextVal = (a & b); break;
+              case 'OR': nextVal = (a | b); break;
+              case 'NAND': nextVal = (a & b) ? 0 : 1; break;
+              case 'NOR': nextVal = (a | b) ? 0 : 1; break;
+              case 'XOR': nextVal = (a ^ b); break;
+            }
+          }
+
+          if (node.value !== nextVal) {
+            node.value = nextVal;
+            changed = true;
+          }
+        });
+
+        if (!changed) break;
+      }
+    }
+
+    function renderNodes() {
+      const layer = document.getElementById('nodes-layer');
+      layer.innerHTML = '';
+
+      labState.nodes.forEach((node) => {
+        const el = document.createElement('div');
+        el.className = `circuit-node ${node.value ? 'node-high' : ''}`;
+        el.style.left = `${node.x}px`;
+        el.style.top = `${node.y}px`;
+        el.dataset.nodeId = node.id;
+
+        const titleText = node.type === 'SWITCH'
+          ? `CHAVE ${node.label}`
+          : node.type === 'LED'
+            ? `LED ${node.label}`
+            : `PORTA ${node.type}`;
+
+        const header = document.createElement('div');
+        header.className = 'node-header';
+        header.innerHTML = `<span>${titleText}</span>`;
+
+        const delBtn = document.createElement('button');
+        delBtn.type = 'button';
+        delBtn.className = 'node-del-btn';
+        delBtn.title = 'Remover componente';
+        delBtn.textContent = '×';
+        delBtn.addEventListener('pointerdown', (e) => e.stopPropagation());
+        delBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          removeCircuitNode(node.id);
+          SoundFX.click();
+        });
+        header.appendChild(delBtn);
+        el.appendChild(header);
+
+        // Corpo específico do componente
+        if (node.type === 'SWITCH') {
+          const swBtn = document.createElement('button');
+          swBtn.type = 'button';
+          swBtn.className = `switch-toggle-btn ${node.value ? 'is-on' : ''}`;
+          swBtn.textContent = node.value ? '1 (ON)' : '0 (OFF)';
+          swBtn.addEventListener('pointerdown', (e) => e.stopPropagation());
+          swBtn.addEventListener('click', () => {
+            node.value = node.value ? 0 : 1;
+            evaluateCircuit();
+            renderNodes();
+            renderWires();
+            renderLiveTruthTable();
+            SoundFX.click();
+          });
+          el.appendChild(swBtn);
+
+          // Pino de saída à direita
+          el.appendChild(createPinElement(node.id, 'out', 0, '50%', node.value === 1));
+        } else if (node.type === 'LED') {
+          const bulb = document.createElement('div');
+          bulb.className = `led-bulb ${node.value ? 'is-on' : ''}`;
+          bulb.textContent = node.value ? '1' : '0';
+          el.appendChild(bulb);
+
+          // Pino de entrada à esquerda
+          el.appendChild(createPinElement(node.id, 'in', 0, '50%', node.value === 1));
+        } else {
+          // Porta Lógica
+          const svgWrap = document.createElement('div');
+          svgWrap.innerHTML = getGateMiniSVG(node.type);
+          el.appendChild(svgWrap);
+
+          if (node.type === 'NOT') {
+            el.appendChild(createPinElement(node.id, 'in', 0, '56%', getIncomingSignal(node.id, 0) === 1));
+          } else {
+            el.appendChild(createPinElement(node.id, 'in', 0, '40%', getIncomingSignal(node.id, 0) === 1));
+            el.appendChild(createPinElement(node.id, 'in', 1, '72%', getIncomingSignal(node.id, 1) === 1));
+          }
+          el.appendChild(createPinElement(node.id, 'out', 0, '56%', node.value === 1));
+        }
+
+        // Arraste suave (Pointer Events para mouse e touch)
+        el.addEventListener('pointerdown', (e) => {
+          if (e.target.classList.contains('pin-dot') || e.target.tagName === 'BUTTON') return;
+          const stage = document.getElementById('canvas-stage');
+          const startX = e.clientX;
+          const startY = e.clientY;
+          const origX = node.x;
+          const origY = node.y;
+
+          el.setPointerCapture(e.pointerId);
+
+          const onMove = (ev) => {
+            const maxX = Math.max(10, stage.clientWidth - el.offsetWidth - 8);
+            const maxY = Math.max(10, stage.clientHeight - el.offsetHeight - 8);
+            node.x = Math.min(maxX, Math.max(6, origX + (ev.clientX - startX)));
+            node.y = Math.min(maxY, Math.max(6, origY + (ev.clientY - startY)));
+            el.style.left = `${node.x}px`;
+            el.style.top = `${node.y}px`;
+            renderWires();
+          };
+
+          const onUp = () => {
+            el.removeEventListener('pointermove', onMove);
+            el.removeEventListener('pointerup', onUp);
+          };
+
+          el.addEventListener('pointermove', onMove);
+          el.addEventListener('pointerup', onUp);
+        });
+
+        layer.appendChild(el);
       });
     }
 
-    window.addEventListener('DOMContentLoaded', init);
+    function getIncomingSignal(nodeId, pinIndex) {
+      const wire = labState.wires.find((w) => w.toNodeId === nodeId && w.toPinIndex === pinIndex);
+      if (!wire) return 0;
+      const src = labState.nodes.find((n) => n.id === wire.fromNodeId);
+      return src ? src.value : 0;
+    }
+
+    function createPinElement(nodeId, kind, pinIndex, topPercent, isHigh) {
+      const pin = document.createElement('div');
+      const isSelected =
+        labState.pendingPin &&
+        labState.pendingPin.nodeId === nodeId &&
+        labState.pendingPin.kind === kind &&
+        labState.pendingPin.pinIndex === pinIndex;
+
+      pin.className = `pin-dot ${kind === 'out' ? 'pin-out' : 'pin-in'} ${isHigh ? 'pin-high' : ''} ${isSelected ? 'pin-selected' : ''}`;
+      pin.style.top = topPercent;
+      pin.style.transform = 'translateY(-50%)';
+      pin.dataset.nodeId = nodeId;
+      pin.dataset.kind = kind;
+      pin.dataset.pinIndex = pinIndex;
+      pin.title = kind === 'out' ? 'Saída (clique para conectar)' : `Entrada ${pinIndex + 1} (clique para conectar)`;
+
+      pin.addEventListener('pointerdown', (e) => e.stopPropagation());
+      pin.addEventListener('click', (e) => {
+        e.stopPropagation();
+        handlePinClick(nodeId, kind, pinIndex);
+      });
+      return pin;
+    }
+
+    function renderWires() {
+      const svg = document.getElementById('wires-svg');
+      const stage = document.getElementById('canvas-stage');
+      if (!svg || !stage) return;
+
+      svg.innerHTML = '';
+      const stageRect = stage.getBoundingClientRect();
+
+      labState.wires.forEach((wire) => {
+        const fromPin = stage.querySelector(`.pin-dot[data-node-id="${wire.fromNodeId}"][data-kind="out"]`);
+        const toPin = stage.querySelector(`.pin-dot[data-node-id="${wire.toNodeId}"][data-kind="in"][data-pin-index="${wire.toPinIndex}"]`);
+        if (!fromPin || !toPin) return;
+
+        const r1 = fromPin.getBoundingClientRect();
+        const r2 = toPin.getBoundingClientRect();
+
+        const x1 = r1.left - stageRect.left + r1.width / 2;
+        const y1 = r1.top - stageRect.top + r1.height / 2;
+        const x2 = r2.left - stageRect.left + r2.width / 2;
+        const y2 = r2.top - stageRect.top + r2.height / 2;
+
+        const dx = Math.max(40, Math.abs(x2 - x1) * 0.5);
+        const pathData = `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`;
+
+        const srcNode = labState.nodes.find((n) => n.id === wire.fromNodeId);
+        const isHigh = srcNode && srcNode.value === 1;
+
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', pathData);
+        path.setAttribute('class', 'wire-path');
+        path.setAttribute('stroke', isHigh ? '#1ed760' : '#4b5563');
+        path.setAttribute('stroke-width', isHigh ? '3.4' : '2.6');
+        if (isHigh) {
+          path.style.filter = 'drop-shadow(0 0 6px rgba(30, 215, 96, 0.55))';
+        }
+
+        path.addEventListener('click', () => {
+          labState.wires = labState.wires.filter((w) => w.id !== wire.id);
+          evaluateCircuit();
+          renderNodes();
+          renderWires();
+          renderLiveTruthTable();
+          SoundFX.click();
+        });
+
+        svg.appendChild(path);
+      });
+    }
+
+    /**
+     * Gera automaticamente a Tabela-Verdade completa com base nas Chaves e LEDs na bancada
+     */
+    function renderLiveTruthTable() {
+      const container = document.getElementById('live-tt-container');
+      const switches = labState.nodes
+        .filter((n) => n.type === 'SWITCH')
+        .sort((a, b) => a.label.localeCompare(b.label));
+      const leds = labState.nodes
+        .filter((n) => n.type === 'LED')
+        .sort((a, b) => a.label.localeCompare(b.label));
+
+      if (switches.length === 0 || leds.length === 0) {
+        container.innerHTML = `<p style="font-family:var(--font-mono);font-size:0.78rem;color:var(--text-muted);">Adicione pelo menos uma Chave (Switch) e um LED de saída na bancada para visualizar a tabela-verdade em tempo real.</p>`;
+        return;
+      }
+
+      // Salva estado atual das chaves
+      const savedValues = {};
+      switches.forEach((s) => { savedValues[s.label] = s.value; });
+
+      const uniqueLabels = [...new Set(switches.map((s) => s.label))];
+      const totalRows = 1 << uniqueLabels.length;
+
+      let html = `<table class="live-tt-table"><thead><tr>`;
+      uniqueLabels.forEach((lbl) => { html += `<th>Entrada ${lbl}</th>`; });
+      leds.forEach((led) => { html += `<th>Saída ${led.label}</th>`; });
+      html += `</tr></thead><tbody>`;
+
+      for (let mask = 0; mask < totalRows; mask++) {
+        const combo = {};
+        let isCurrentRow = true;
+
+        uniqueLabels.forEach((lbl, i) => {
+          const bit = (mask >> (uniqueLabels.length - 1 - i)) & 1;
+          combo[lbl] = bit;
+          if (savedValues[lbl] !== bit) isCurrentRow = false;
+        });
+
+        evaluateCircuit(combo);
+
+        html += `<tr class="${isCurrentRow ? 'current-state-row' : ''}">`;
+        uniqueLabels.forEach((lbl) => {
+          html += `<td>${combo[lbl]}</td>`;
+        });
+        leds.forEach((led) => {
+          html += `<td class="${led.value ? 'val-high' : ''}">${led.value}</td>`;
+        });
+        html += `</tr>`;
+      }
+
+      html += `</tbody></table>`;
+      container.innerHTML = html;
+
+      // Restaura estado manual do usuário
+      evaluateCircuit(savedValues);
+    }
+
+    /* ==========================================================================
+       EXERCÍCIOS PRÁTICOS & VALIDAÇÃO AUTOMÁTICA
+       ========================================================================== */
+    function renderExerciseList() {
+      const list = document.getElementById('exercise-list');
+      list.innerHTML = '';
+
+      LAB_EXERCISES.forEach((ex) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        const isActive = ex.id === labState.activeExerciseId;
+        const isDone = labState.completedExercises.has(ex.id);
+        btn.className = `exercise-btn ${isActive ? 'active-ex' : ''} ${isDone ? 'done-ex' : ''}`;
+
+        btn.innerHTML = `
+          <div>
+            <span class="ex-btn-title">${ex.title}</span>
+            <span class="ex-btn-expr">${ex.expr}</span>
+          </div>
+          <span class="ex-status-dot">${isDone ? '[ ✓ ]' : '[ ? ]'}</span>
+        `;
+
+        btn.addEventListener('click', () => {
+          selectLabExercise(ex.id);
+          SoundFX.click();
+        });
+
+        list.appendChild(btn);
+      });
+
+      document.getElementById('ex-completed-badge').textContent =
+        `${labState.completedExercises.size} / ${LAB_EXERCISES.length} CONCLUÍDOS`;
+    }
+
+    function selectLabExercise(exId) {
+      labState.activeExerciseId = exId;
+      const ex = LAB_EXERCISES.find((e) => e.id === exId) || LAB_EXERCISES[0];
+
+      document.getElementById('ex-detail-title').textContent = ex.title;
+      document.getElementById('ex-detail-desc').textContent = ex.desc;
+      const logBox = document.getElementById('ex-validation-log');
+      logBox.className = 'validation-result-log';
+      logBox.innerHTML = '';
+
+      renderExerciseList();
+    }
+
+    function loadExerciseTemplate() {
+      const ex = LAB_EXERCISES.find((e) => e.id === labState.activeExerciseId) || LAB_EXERCISES[0];
+      labState.nodes = [];
+      labState.wires = [];
+      labState.pendingPin = null;
+
+      ex.setupNodes.forEach((n) => {
+        addCircuitNode(n.type, n.label, n.x, n.y);
+      });
+
+      const logBox = document.getElementById('ex-validation-log');
+      logBox.className = 'validation-result-log visible pass';
+      logBox.textContent = `Bancada preparada para "${ex.title}". Adicione a(s) porta(s) lógica(s) e conecte os fios até o LED X.`;
+      SoundFX.click();
+    }
+
+    function validateActiveExercise() {
+      const ex = LAB_EXERCISES.find((e) => e.id === labState.activeExerciseId) || LAB_EXERCISES[0];
+      const logBox = document.getElementById('ex-validation-log');
+
+      // Verifica se todas as entradas requeridas e o LED X estão na bancada
+      const missingInputs = ex.inputs.filter(
+        (lbl) => !labState.nodes.some((n) => n.type === 'SWITCH' && n.label === lbl)
+      );
+      const ledX = labState.nodes.find((n) => n.type === 'LED' && n.label === 'X');
+
+      if (missingInputs.length > 0 || !ledX) {
+        logBox.className = 'validation-result-log visible fail';
+        logBox.innerHTML = `<strong>[ ✕ ] COMPONENTES AUSENTES:</strong> Certifique-se de ter as chaves (${ex.inputs.join(', ')}) e o LED X na bancada.`;
+        SoundFX.error();
+        return;
+      }
+
+      // Verifica requisitos estruturais específicos (ex: Exercício 7 requer AND + NOT)
+      if (ex.requireGateTypes) {
+        const missingGates = ex.requireGateTypes.filter(
+          (gType) => !labState.nodes.some((n) => n.type === gType)
+        );
+        if (missingGates.length > 0) {
+          logBox.className = 'validation-result-log visible fail';
+          logBox.innerHTML = `<strong>[ ✕ ] ESTRUTURA INCOMPLETA:</strong> Este exercício exige combinar as portas: ${ex.requireGateTypes.join(' + ')}.`;
+          SoundFX.error();
+          return;
+        }
+      }
+
+      // Salva valores manuais antes de testar todas as combinações
+      const savedValues = {};
+      labState.nodes.filter((n) => n.type === 'SWITCH').forEach((s) => {
+        savedValues[s.label] = s.value;
+      });
+
+      const totalCombos = 1 << ex.inputs.length;
+      let allPassed = true;
+      const lines = [];
+
+      for (let mask = 0; mask < totalCombos; mask++) {
+        const env = {};
+        ex.inputs.forEach((lbl, idx) => {
+          env[lbl] = (mask >> (ex.inputs.length - 1 - idx)) & 1;
+        });
+
+        evaluateCircuit(env);
+        const obtained = ledX.value;
+        const expected = ex.expectedFn(env);
+        const ok = obtained === expected;
+        if (!ok) allPassed = false;
+
+        const inStr = ex.inputs.map((lbl) => `${lbl}=${env[lbl]}`).join(', ');
+        lines.push(`${inStr} → Esperado: ${expected} | Obtido: ${obtained} ${ok ? '✓' : '✕'}`);
+      }
+
+      // Restaura valores originais
+      evaluateCircuit(savedValues);
+      renderNodes();
+      renderWires();
+
+      if (allPassed) {
+        labState.completedExercises.add(ex.id);
+        renderExerciseList();
+        logBox.className = 'validation-result-log visible pass';
+        logBox.innerHTML = `<strong>[ ✓ ] CIRCUITO VALIDADO COM SUCESSO!</strong><br>${lines.join('<br>')}`;
+        SoundFX.success();
+      } else {
+        logBox.className = 'validation-result-log visible fail';
+        logBox.innerHTML = `<strong>[ ✕ ] DIVERGÊNCIA NA TABELA-VERDADE:</strong><br>${lines.join('<br>')}`;
+        SoundFX.error();
+      }
+    }
+
+    /* ==========================================================================
+       INICIALIZAÇÃO GERAL DA APLICAÇÃO
+       ========================================================================== */
+    window.addEventListener('DOMContentLoaded', () => {
+      initRainCanvas();
+      initCrossword();
+      renderQuizQuestion();
+      renderExerciseList();
+      loadExerciseTemplate();
+
+      // Navegação superior e botões da Home
+      document.querySelectorAll('[data-nav]').forEach((el) => {
+        el.addEventListener('click', () => {
+          navigateTo(el.dataset.nav, el.dataset.subtab || null);
+        });
+      });
+
+      // Áudio global
+      const soundBtn = document.getElementById('btn-toggle-audio');
+      soundBtn.addEventListener('click', () => {
+        const isOn = SoundFX.toggle();
+        soundBtn.textContent = isOn ? '🔊' : '🔇';
+        if (isOn) SoundFX.click();
+      });
+
+      // Controles da Cruzadinha
+      document.getElementById('btn-cw-check').addEventListener('click', checkCrossword);
+      document.getElementById('btn-cw-reset').addEventListener('click', resetCrossword);
+      document.getElementById('btn-cw-close-banner').addEventListener('click', () => {
+        document.getElementById('cw-banner').classList.remove('show');
+      });
+
+      document.getElementById('btn-cw-dir').addEventListener('click', () => {
+        const { row, col } = cwState.focused;
+        const cell = cwState.grid[row]?.[col];
+        if (cell && cell.words.length > 1) {
+          const alt = cell.words.find((id) => id !== cwState.activeWordId);
+          if (alt) {
+            cwState.activeWordId = alt;
+            updateCrosswordHighlights();
+            cell.input.focus();
+            SoundFX.click();
+          }
+        }
+      });
+
+      document.getElementById('btn-close-cw-modal').addEventListener('click', () => {
+        document.getElementById('cw-victory-modal').classList.remove('open');
+      });
+      document.getElementById('btn-restart-cw-modal').addEventListener('click', resetCrossword);
+
+      // Sub-abas de Portas Lógicas
+      document.getElementById('tab-quiz-btn').addEventListener('click', () => {
+        switchLogicSubtab('quiz');
+        SoundFX.click();
+      });
+      document.getElementById('tab-theory-btn').addEventListener('click', () => {
+        switchLogicSubtab('theory');
+        SoundFX.click();
+      });
+
+      // Controles do Quiz
+      document.getElementById('btn-quiz-next').addEventListener('click', advanceQuiz);
+      document.getElementById('btn-quiz-restart').addEventListener('click', restartQuiz);
+
+      // Controles do Laboratório de Circuitos
+      document.querySelectorAll('[data-add-node]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          addCircuitNode(btn.dataset.addNode, btn.dataset.label || '');
+          SoundFX.click();
+        });
+      });
+
+      document.getElementById('btn-clear-workbench').addEventListener('click', () => {
+        labState.nodes = [];
+        labState.wires = [];
+        labState.pendingPin = null;
+        renderNodes();
+        renderWires();
+        renderLiveTruthTable();
+        SoundFX.click();
+      });
+
+      document.getElementById('btn-load-ex-template').addEventListener('click', loadExerciseTemplate);
+      document.getElementById('btn-validate-circuit').addEventListener('click', validateActiveExercise);
+
+      window.addEventListener('resize', () => renderWires());
+    });
   </script>
 </body>
 </html>
