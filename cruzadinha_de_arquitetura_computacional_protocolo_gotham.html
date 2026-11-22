@@ -1,0 +1,2157 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cruzadinha de Arquitetura Computacional // Protocolo Gotham</title>
+
+  <!-- Fontes temáticas: Oswald (títulos cinematográficos condensados), JetBrains Mono (terminal forense) e Inter (leitura das pistas) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700;800&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ==========================================================================
+       VARIÁVEIS DE TEMA — ESTÉTICA THE BATMAN (2022) NOIR & TERMINAL FORENSE
+       ========================================================================== */
+    :root {
+      --bg-void: #070709;
+      --bg-panel: #0d0e12;
+      --bg-surface: #13161d;
+      --bg-surface-hover: #1a1e28;
+      --bg-cell-void: #050507;
+      --bg-cell-active: #151821;
+
+      --crimson-primary: #c8102e;
+      --crimson-bright: #e61938;
+      --crimson-dark: #6b0818;
+      --crimson-glow: rgba(200, 16, 46, 0.38);
+      --crimson-tint: rgba(200, 16, 46, 0.16);
+
+      --terminal-green: #1ed760;
+      --terminal-green-glow: rgba(30, 215, 96, 0.35);
+      --terminal-green-tint: rgba(30, 215, 96, 0.16);
+
+      --text-primary: #eceef2;
+      --text-secondary: #9aa1b2;
+      --text-muted: #5d6475;
+
+      --border-subtle: #222632;
+      --border-strong: #323849;
+
+      --font-display: 'Oswald', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --font-sans: 'Inter', sans-serif;
+    }
+
+    /* ==========================================================================
+       RESET E BASE GLOBAL
+       ========================================================================== */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      min-height: 100%;
+      width: 100%;
+      max-width: 100%;
+      overflow-x: hidden;
+      background-color: var(--bg-void);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background-image:
+        radial-gradient(circle at 50% 0%, rgba(200, 16, 46, 0.14) 0%, transparent 55%),
+        radial-gradient(circle at 85% 90%, rgba(200, 16, 46, 0.08) 0%, transparent 45%),
+        linear-gradient(180deg, #070709 0%, #0a0b0f 100%);
+      position: relative;
+    }
+
+    /* Canvas de chuva atmosférica no fundo */
+    #rain-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+      opacity: 0.42;
+    }
+
+    /* Vinheta cinematográfica e textura sutil de monitor CRT/Dossiê */
+    .noir-vignette {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+      background:
+        radial-gradient(circle at center, transparent 58%, rgba(0, 0, 0, 0.78) 100%),
+        repeating-linear-gradient(
+          0deg,
+          rgba(255, 255, 255, 0.012) 0px,
+          rgba(255, 255, 255, 0.012) 1px,
+          transparent 1px,
+          transparent 3px
+        );
+    }
+
+    /* ==========================================================================
+       TELA INICIAL (SPLASH SCREEN — PROTOCOLO GOTHAM)
+       ========================================================================== */
+    #splash-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.25rem;
+      background:
+        radial-gradient(circle at 50% 35%, rgba(200, 16, 46, 0.22) 0%, rgba(7, 7, 9, 0.96) 62%, #050507 100%);
+      backdrop-filter: blur(6px);
+      transition: opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1), transform 0.65s cubic-bezier(0.22, 1, 0.36, 1), visibility 0.65s;
+      overflow-y: auto;
+    }
+
+    #splash-screen.hidden-splash {
+      opacity: 0;
+      transform: scale(1.03);
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .dossier-card {
+      position: relative;
+      width: 100%;
+      max-width: 680px;
+      background: linear-gradient(180deg, rgba(16, 18, 24, 0.95) 0%, rgba(10, 11, 15, 0.98) 100%);
+      border: 1px solid rgba(200, 16, 46, 0.45);
+      border-radius: 10px;
+      padding: clamp(1.5rem, 4vw, 2.75rem);
+      box-shadow:
+        0 25px 70px rgba(0, 0, 0, 0.85),
+        0 0 40px rgba(200, 16, 46, 0.16),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      text-align: center;
+      z-index: 5;
+    }
+
+    /* Cantoneiras táticas estilo visor forense */
+    .dossier-card::before,
+    .dossier-card::after {
+      content: "";
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border-color: var(--crimson-primary);
+      border-style: solid;
+      pointer-events: none;
+    }
+    .dossier-card::before {
+      top: -1px;
+      left: -1px;
+      border-width: 2px 0 0 2px;
+      border-top-left-radius: 10px;
+    }
+    .dossier-card::after {
+      bottom: -1px;
+      right: -1px;
+      border-width: 0 2px 2px 0;
+      border-bottom-right-radius: 10px;
+    }
+
+    .cipher-top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.14em;
+      color: var(--text-secondary);
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 0.85rem;
+      margin-bottom: 1.5rem;
+      text-transform: uppercase;
+    }
+
+    .riddler-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      color: var(--crimson-bright);
+      font-weight: 700;
+      background: rgba(200, 16, 46, 0.12);
+      border: 1px solid rgba(200, 16, 46, 0.35);
+      padding: 0.2rem 0.55rem;
+      border-radius: 4px;
+    }
+
+    .bat-emblem-wrap {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 1.1rem;
+    }
+
+    .bat-emblem-svg {
+      width: clamp(130px, 28vw, 190px);
+      height: auto;
+      filter: drop-shadow(0 0 18px rgba(200, 16, 46, 0.55));
+      animation: emblemPulse 4s ease-in-out infinite;
+    }
+
+    @keyframes emblemPulse {
+      0%, 100% { filter: drop-shadow(0 0 14px rgba(200, 16, 46, 0.45)); }
+      50% { filter: drop-shadow(0 0 26px rgba(230, 25, 56, 0.78)); }
+    }
+
+    .dossier-tag {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: clamp(0.66rem, 1.8vw, 0.78rem);
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      color: var(--crimson-bright);
+      text-transform: uppercase;
+      margin-bottom: 0.55rem;
+    }
+
+    .splash-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.9rem, 5.5vw, 3.15rem);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      line-height: 1.08;
+      text-transform: uppercase;
+      color: #ffffff;
+      text-shadow: 0 2px 20px rgba(200, 16, 46, 0.4);
+      margin-bottom: 1rem;
+    }
+
+    .splash-briefing {
+      font-size: clamp(0.88rem, 2.2vw, 0.98rem);
+      line-height: 1.65;
+      color: var(--text-secondary);
+      max-width: 540px;
+      margin: 0 auto 1.5rem;
+    }
+
+    .splash-briefing strong {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    .tactical-rules-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+      gap: 0.75rem;
+      margin-bottom: 1.85rem;
+      text-align: left;
+    }
+
+    .rule-item {
+      background: rgba(255, 255, 255, 0.025);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 0.75rem 0.85rem;
+    }
+
+    .rule-item-key {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--crimson-bright);
+      letter-spacing: 0.08em;
+      margin-bottom: 0.25rem;
+      display: block;
+    }
+
+    .rule-item-desc {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      line-height: 1.4;
+    }
+
+    .btn-start-investigation {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      width: 100%;
+      max-width: 340px;
+      padding: 1rem 1.75rem;
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: #ffffff;
+      background: linear-gradient(135deg, #c8102e 0%, #8e091e 100%);
+      border: 1px solid #ff3352;
+      border-radius: 6px;
+      cursor: pointer;
+      box-shadow:
+        0 10px 30px rgba(200, 16, 46, 0.42),
+        inset 0 1px 0 rgba(255, 255, 255, 0.22);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+
+    .btn-start-investigation:hover {
+      transform: translateY(-2px);
+      background: linear-gradient(135deg, #e01435 0%, #a50b24 100%);
+      box-shadow:
+        0 14px 36px rgba(230, 25, 56, 0.58),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    }
+
+    .btn-start-investigation:active {
+      transform: translateY(0);
+    }
+
+    /* ==========================================================================
+       INTERFACE PRINCIPAL DO JOGO
+       ========================================================================== */
+    .app-shell {
+      position: relative;
+      z-index: 10;
+      max-width: 1380px;
+      margin: 0 auto;
+      padding: 0.85rem clamp(0.6rem, 2vw, 1.5rem) 2.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.95rem;
+    }
+
+    /* HUD Superior */
+    .tactical-hud {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.85rem;
+      background: rgba(13, 14, 18, 0.92);
+      border: 1px solid var(--border-subtle);
+      border-left: 3px solid var(--crimson-primary);
+      border-radius: 8px;
+      padding: 0.75rem 1.1rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
+      backdrop-filter: blur(8px);
+    }
+
+    .hud-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .hud-bat-icon {
+      width: 44px;
+      height: auto;
+      flex-shrink: 0;
+      filter: drop-shadow(0 0 8px rgba(200, 16, 46, 0.5));
+    }
+
+    .hud-title-group h1 {
+      font-family: var(--font-display);
+      font-size: clamp(1.1rem, 2.5vw, 1.45rem);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #ffffff;
+      line-height: 1.1;
+    }
+
+    .hud-title-group span {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.12em;
+      color: var(--text-secondary);
+      margin-top: 0.15rem;
+    }
+
+    /* Contador de Acertos */
+    .hud-score-panel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #090a0d;
+      border: 1px solid var(--border-strong);
+      border-radius: 6px;
+      padding: 0.45rem 1rem;
+      min-width: 195px;
+    }
+
+    .score-label {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.16em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .score-value {
+      font-family: var(--font-mono);
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: 0.04em;
+      margin: 0.12rem 0 0.3rem;
+      transition: color 0.3s ease;
+    }
+
+    .score-value.all-solved {
+      color: var(--terminal-green);
+      text-shadow: 0 0 12px var(--terminal-green-glow);
+    }
+
+    .score-segments {
+      display: grid;
+      grid-template-columns: repeat(14, 1fr);
+      gap: 2px;
+      width: 100%;
+    }
+
+    .score-seg {
+      height: 4px;
+      border-radius: 1px;
+      background: #1d212c;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .score-seg.filled {
+      background: var(--terminal-green);
+      box-shadow: 0 0 6px var(--terminal-green-glow);
+    }
+
+    /* Botões de Ação Tática */
+    .hud-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.55rem;
+    }
+
+    .btn-tactical {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      padding: 0.6rem 1.05rem;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      border: 1px solid transparent;
+    }
+
+    .btn-check {
+      background: linear-gradient(135deg, var(--crimson-primary) 0%, #960b22 100%);
+      border-color: #f02444;
+      color: #ffffff;
+      box-shadow: 0 4px 16px rgba(200, 16, 46, 0.35);
+    }
+
+    .btn-check:hover {
+      background: linear-gradient(135deg, var(--crimson-bright) 0%, #b30d28 100%);
+      box-shadow: 0 6px 22px rgba(230, 25, 56, 0.52);
+      transform: translateY(-1px);
+    }
+
+    .btn-reset {
+      background: var(--bg-surface);
+      border-color: var(--border-strong);
+      color: var(--text-primary);
+    }
+
+    .btn-reset:hover {
+      background: var(--bg-surface-hover);
+      border-color: var(--crimson-primary);
+      color: #ffffff;
+    }
+
+    .btn-icon-only {
+      padding: 0.6rem 0.72rem;
+      background: var(--bg-surface);
+      border-color: var(--border-subtle);
+      color: var(--text-secondary);
+    }
+
+    .btn-icon-only:hover {
+      border-color: var(--border-strong);
+      color: var(--text-primary);
+    }
+
+    /* ==========================================================================
+       BANNERS DE FEEDBACK (STATUS / VITÓRIA PROTOCOLO CONCLUÍDO)
+       ========================================================================== */
+    .status-banner {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      border-radius: 7px;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      animation: fadeSlideDown 0.3s ease;
+    }
+
+    .status-banner.visible {
+      display: flex;
+    }
+
+    .status-banner.info {
+      background: rgba(200, 16, 46, 0.12);
+      border: 1px solid rgba(200, 16, 46, 0.45);
+      color: #f3c6ce;
+    }
+
+    .status-banner.victory {
+      background: linear-gradient(90deg, rgba(30, 215, 96, 0.16) 0%, rgba(13, 18, 15, 0.95) 100%);
+      border: 1px solid var(--terminal-green);
+      color: #d7ffe5;
+      box-shadow: 0 0 28px rgba(30, 215, 96, 0.22);
+    }
+
+    @keyframes fadeSlideDown {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ==========================================================================
+       LAYOUT PRINCIPAL: TABULEIRO (ESQUERDA) + PISTAS (DIREITA)
+       ========================================================================== */
+    .workspace-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.18fr) minmax(0, 0.92fr);
+      gap: 1rem;
+      align-items: start;
+    }
+
+    @media (max-width: 1024px) {
+      .workspace-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Painel do Tabuleiro */
+    .board-panel {
+      background: rgba(13, 14, 18, 0.94);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: clamp(0.65rem, 1.8vw, 1.1rem);
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.65);
+    }
+
+    /* Barra da Pista Ativa acima do tabuleiro */
+    .active-clue-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      background: #090a0e;
+      border: 1px solid rgba(200, 16, 46, 0.45);
+      border-left: 4px solid var(--crimson-primary);
+      border-radius: 6px;
+      padding: 0.65rem 0.85rem;
+      margin-bottom: 0.85rem;
+      min-height: 62px;
+    }
+
+    .active-clue-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 0.22rem;
+    }
+
+    .active-clue-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: var(--crimson-bright);
+      text-transform: uppercase;
+    }
+
+    .active-clue-length {
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .active-clue-text {
+      font-size: clamp(0.84rem, 1.8vw, 0.95rem);
+      color: var(--text-primary);
+      line-height: 1.4;
+      font-weight: 500;
+    }
+
+    .btn-toggle-dir {
+      flex-shrink: 0;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-strong);
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 0.42rem 0.65rem;
+      border-radius: 5px;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      transition: all 0.15s ease;
+    }
+
+    .btn-toggle-dir:hover {
+      border-color: var(--crimson-primary);
+      color: #ffffff;
+    }
+
+    /* Grade 18x17 da Cruzadinha */
+    .crossword-frame {
+      width: 100%;
+      background: #040406;
+      border: 1px solid var(--border-strong);
+      border-radius: 6px;
+      padding: clamp(3px, 0.8vw, 8px);
+      box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.9);
+    }
+
+    .crossword-grid {
+      display: grid;
+      grid-template-columns: repeat(17, minmax(0, 1fr));
+      gap: clamp(1px, 0.25vw, 3px);
+      width: 100%;
+      user-select: none;
+    }
+
+    /* Célula Inativa (Vazio Noir) */
+    .grid-cell-void {
+      aspect-ratio: 1 / 1;
+      background: var(--bg-cell-void);
+      border-radius: 2px;
+      position: relative;
+    }
+
+    /* Célula Ativa */
+    .grid-cell-active {
+      aspect-ratio: 1 / 1;
+      position: relative;
+      background: var(--bg-cell-active);
+      border: 1px solid #2b3142;
+      border-radius: 3px;
+      transition: background-color 0.14s ease, border-color 0.14s ease, box-shadow 0.14s ease;
+    }
+
+    .grid-cell-active:hover {
+      border-color: #4b5570;
+    }
+
+    /* Destaque da Palavra Selecionada */
+    .grid-cell-active.word-highlight {
+      background: rgba(200, 16, 46, 0.16);
+      border-color: rgba(200, 16, 46, 0.55);
+    }
+
+    /* Célula Foco Atual */
+    .grid-cell-active.cell-focused {
+      background: rgba(200, 16, 46, 0.32);
+      border-color: #ff2a4b;
+      box-shadow: 0 0 10px rgba(230, 25, 56, 0.65);
+      z-index: 3;
+    }
+
+    /* Validação: Palavra Correta (Verde Terminal) */
+    .grid-cell-active.cell-correct {
+      background: var(--terminal-green-tint);
+      border-color: var(--terminal-green);
+      box-shadow: inset 0 0 8px rgba(30, 215, 96, 0.22);
+    }
+
+    .grid-cell-active.cell-correct .cell-input {
+      color: var(--terminal-green);
+      text-shadow: 0 0 8px rgba(30, 215, 96, 0.45);
+    }
+
+    .grid-cell-active.cell-correct.cell-focused {
+      box-shadow: 0 0 12px rgba(30, 215, 96, 0.75);
+    }
+
+    /* Validação: Palavra Errada / Incompleta (Vermelho Carmesim) */
+    .grid-cell-active.cell-wrong {
+      background: rgba(230, 25, 56, 0.24);
+      border-color: var(--crimson-bright);
+      box-shadow: inset 0 0 8px rgba(230, 25, 56, 0.28);
+    }
+
+    .grid-cell-active.cell-wrong .cell-input {
+      color: #ff5c75;
+    }
+
+    /* Número pequeno da pista no canto superior esquerdo */
+    .cell-number {
+      position: absolute;
+      top: 1px;
+      left: 2px;
+      font-family: var(--font-mono);
+      font-size: clamp(0.36rem, 0.95vw, 0.56rem);
+      font-weight: 700;
+      line-height: 1;
+      color: #9ca3b5;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .word-highlight .cell-number {
+      color: #ff8598;
+    }
+
+    .cell-correct .cell-number {
+      color: #6ee79a;
+    }
+
+    /* Input de 1 caractere */
+    .cell-input {
+      width: 100%;
+      height: 100%;
+      border: none;
+      outline: none;
+      background: transparent;
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: clamp(0.62rem, 1.65vw, 1.05rem);
+      font-weight: 800;
+      color: #f3f4f6;
+      text-transform: uppercase;
+      caret-color: transparent;
+      cursor: pointer;
+      padding: 0;
+      padding-top: 12%;
+      border-radius: 2px;
+    }
+
+    /* Legenda rápida abaixo do tabuleiro */
+    .board-legend {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.65rem;
+      margin-top: 0.75rem;
+      padding-top: 0.65rem;
+      border-top: 1px solid var(--border-subtle);
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--text-muted);
+    }
+
+    .legend-indicators {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.85rem;
+    }
+
+    .legend-dot {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .legend-dot i {
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      border-radius: 2px;
+    }
+
+    /* ==========================================================================
+       PAINEL DE PISTAS (HORIZONTAIS & VERTICAIS)
+       ========================================================================== */
+    .clues-panel {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.9rem;
+    }
+
+    @media (min-width: 680px) and (max-width: 1024px) {
+      .clues-panel {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .clue-group-card {
+      background: rgba(13, 14, 18, 0.94);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 0.9rem;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+    }
+
+    .clue-group-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-strong);
+      padding-bottom: 0.55rem;
+      margin-bottom: 0.65rem;
+    }
+
+    .clue-group-title {
+      font-family: var(--font-display);
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--crimson-bright);
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .clue-group-count {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--text-muted);
+    }
+
+    .clue-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.42rem;
+    }
+
+    .clue-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.55rem;
+      padding: 0.52rem 0.62rem;
+      background: rgba(255, 255, 255, 0.018);
+      border: 1px solid transparent;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .clue-item:hover {
+      background: var(--bg-surface-hover);
+      border-color: var(--border-strong);
+    }
+
+    .clue-item.active-clue {
+      background: rgba(200, 16, 46, 0.15);
+      border-color: var(--crimson-primary);
+      box-shadow: inset 3px 0 0 var(--crimson-bright);
+    }
+
+    .clue-item.solved-clue {
+      background: rgba(30, 215, 96, 0.08);
+      border-color: rgba(30, 215, 96, 0.35);
+    }
+
+    .clue-item.solved-clue .clue-text {
+      color: #a9e6be;
+    }
+
+    .clue-item.wrong-clue {
+      border-color: rgba(230, 25, 56, 0.45);
+    }
+
+    .clue-num-badge {
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      font-weight: 800;
+      color: var(--crimson-bright);
+      min-width: 1.55rem;
+      padding-top: 0.08rem;
+    }
+
+    .solved-clue .clue-num-badge {
+      color: var(--terminal-green);
+    }
+
+    .clue-text {
+      flex: 1;
+      font-size: 0.83rem;
+      line-height: 1.42;
+      color: var(--text-primary);
+    }
+
+    .clue-status-tag {
+      font-family: var(--font-mono);
+      font-size: 0.66rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      background: #0a0b0e;
+      border: 1px solid var(--border-subtle);
+      padding: 0.14rem 0.4rem;
+      border-radius: 4px;
+      white-space: nowrap;
+      margin-top: 0.06rem;
+    }
+
+    .solved-clue .clue-status-tag {
+      color: var(--terminal-green);
+      border-color: rgba(30, 215, 96, 0.4);
+    }
+
+    .wrong-clue .clue-status-tag {
+      color: #ff6b81;
+      border-color: rgba(230, 25, 56, 0.4);
+    }
+
+    /* ==========================================================================
+       MODAL DE VITÓRIA / DOSSIÊ CONCLUÍDO
+       ========================================================================== */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 90;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      background: rgba(4, 5, 7, 0.84);
+      backdrop-filter: blur(5px);
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+      animation: fadeIn 0.25s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .victory-modal {
+      width: 100%;
+      max-width: 480px;
+      background: linear-gradient(180deg, #101413 0%, #0b0d0e 100%);
+      border: 1px solid var(--terminal-green);
+      border-radius: 10px;
+      padding: 2rem 1.75rem;
+      text-align: center;
+      box-shadow:
+        0 24px 60px rgba(0, 0, 0, 0.9),
+        0 0 40px rgba(30, 215, 96, 0.24);
+    }
+
+    .victory-stamp {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      color: var(--terminal-green);
+      border: 1px solid var(--terminal-green);
+      background: rgba(30, 215, 96, 0.1);
+      padding: 0.28rem 0.75rem;
+      border-radius: 4px;
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+    }
+
+    .victory-modal h2 {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #ffffff;
+      margin-bottom: 0.65rem;
+    }
+
+    .victory-modal p {
+      font-size: 0.9rem;
+      line-height: 1.55;
+      color: var(--text-secondary);
+      margin-bottom: 1.35rem;
+    }
+
+    .victory-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.6rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .stat-box {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(30, 215, 96, 0.25);
+      border-radius: 6px;
+      padding: 0.65rem 0.4rem;
+    }
+
+    .stat-box strong {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 1.05rem;
+      color: var(--terminal-green);
+    }
+
+    .stat-box span {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .victory-actions {
+      display: flex;
+      gap: 0.65rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Efeito atmosférico de chuva de Gotham -->
+  <canvas id="rain-canvas" aria-hidden="true"></canvas>
+  <div class="noir-vignette" aria-hidden="true"></div>
+
+  <!-- ========================================================================
+       TELA INICIAL (SPLASH SCREEN — ESTÉTICA THE BATMAN 2022)
+       ======================================================================== -->
+  <section id="splash-screen" role="dialog" aria-modal="true" aria-labelledby="splash-heading">
+    <div class="dossier-card">
+      <div class="cipher-top-bar">
+        <span>GCPD // TERMINAL DE EVIDÊNCIAS</span>
+        <span class="riddler-badge">[ ? ] CIFRA ATIVA</span>
+      </div>
+
+      <!-- Emblema Geométrico Minimalista inspirado em The Batman (2022) -->
+      <div class="bat-emblem-wrap">
+        <svg class="bat-emblem-svg" viewBox="0 0 320 120" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Emblema Tático Morcego">
+          <path
+            d="M160 22 L152 6 L147 26 L136 29 L112 14 L64 8 L12 20 L38 40 L24 54 L66 64 L56 80 L108 78 L138 98 L160 114 L182 98 L212 78 L264 80 L254 64 L296 54 L282 40 L308 20 L256 8 L208 14 L184 29 L173 26 L168 6 L160 22 Z"
+            fill="#c8102e"
+            stroke="#ff3b5c"
+            stroke-width="1.5"
+          />
+          <path
+            d="M160 32 L144 37 L116 22 L76 18 L48 25 L64 38 L52 46 L86 54 L79 65 L116 64 L144 82 L160 95 L176 82 L204 64 L241 65 L234 54 L268 46 L256 38 L272 25 L244 18 L204 22 L176 37 L160 32 Z"
+            fill="#0a0709"
+            opacity="0.48"
+          />
+        </svg>
+      </div>
+
+      <span class="dossier-tag">ARQUIVO CONFIDENCIAL // SPRINT 03 // ARQUITETURA COMPUTACIONAL</span>
+      <h1 id="splash-heading" class="splash-title">CRUZADINHA: PROTOCOLO GOTHAM</h1>
+
+      <p class="splash-briefing">
+        Um conjunto de <strong>14 termos fundamentais de Arquitetura Computacional</strong> foi criptografado na matriz central. Analise cada pista forense, preencha as casas em letras maiúsculas sem acentos ou espaços e valide suas descobertas para decifrar o dossiê completo.
+      </p>
+
+      <div class="tactical-rules-grid">
+        <div class="rule-item">
+          <span class="rule-item-key">[01] ENTRADA DIRETA</span>
+          <p class="rule-item-desc">Clique em qualquer casa ativa e digite de <strong>A a Z</strong>. O cursor avança automaticamente na palavra.</p>
+        </div>
+        <div class="rule-item">
+          <span class="rule-item-key">[02] INTERSEÇÕES</span>
+          <p class="rule-item-desc">Clique novamente na mesma casa cruzada para alternar entre <strong>Horizontal</strong> e <strong>Vertical</strong>.</p>
+        </div>
+        <div class="rule-item">
+          <span class="rule-item-key">[03] VERIFICAÇÃO</span>
+          <p class="rule-item-desc">Use <strong>Conferir</strong> para destacar acertos em verde terminal e erros em vermelho carmesim.</p>
+        </div>
+      </div>
+
+      <button id="btn-start" class="btn-start-investigation" type="button">
+        <span>INICIAR INVESTIGAÇÃO</span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square">
+          <path d="M5 12h14M13 6l6 6-6 6" />
+        </svg>
+      </button>
+    </div>
+  </section>
+
+  <!-- ========================================================================
+       INTERFACE PRINCIPAL DO JOGO
+       ======================================================================== -->
+  <div class="app-shell">
+    <!-- Barra Tática Superior (HUD) -->
+    <header class="tactical-hud">
+      <div class="hud-brand">
+        <svg class="hud-bat-icon" viewBox="0 0 320 120" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path
+            d="M160 22 L152 6 L147 26 L136 29 L112 14 L64 8 L12 20 L38 40 L24 54 L66 64 L56 80 L108 78 L138 98 L160 114 L182 98 L212 78 L264 80 L254 64 L296 54 L282 40 L308 20 L256 8 L208 14 L184 29 L173 26 L168 6 L160 22 Z"
+            fill="#c8102e"
+          />
+        </svg>
+        <div class="hud-title-group">
+          <h1>Cruzadinha de Arquitetura Computacional</h1>
+          <span>PROTOCOLO GOTHAM // SPRINT 03 // MATRIZ 18×17</span>
+        </div>
+      </div>
+
+      <!-- Contador de Acertos -->
+      <div class="hud-score-panel" aria-live="polite">
+        <span class="score-label">PALAVRAS DECIFRADAS</span>
+        <div id="score-counter" class="score-value">0 de 14 palavras</div>
+        <div id="score-segments" class="score-segments" aria-hidden="true"></div>
+      </div>
+
+      <!-- Botões de Ação -->
+      <div class="hud-actions">
+        <button id="btn-check" class="btn-tactical btn-check" type="button" title="Verificar palavras preenchidas">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+          <span>Conferir</span>
+        </button>
+
+        <button id="btn-reset" class="btn-tactical btn-reset" type="button" title="Limpar todo o tabuleiro">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+            <path d="M3 3v5h5" />
+          </svg>
+          <span>Reiniciar</span>
+        </button>
+
+        <button id="btn-sound" class="btn-tactical btn-icon-only" type="button" title="Alternar áudio tático" aria-label="Alternar áudio tático">
+          🔊
+        </button>
+
+        <button id="btn-dossier" class="btn-tactical btn-icon-only" type="button" title="Abrir dossiê de instruções" aria-label="Abrir dossiê de instruções">
+          [ ? ]
+        </button>
+      </div>
+    </header>
+
+    <!-- Banner de Status Dinâmico -->
+    <div id="status-banner" class="status-banner info" role="status" aria-live="polite">
+      <span id="status-text"></span>
+      <button id="btn-close-banner" type="button" style="background:none;border:none;color:inherit;font-family:var(--font-mono);cursor:pointer;font-weight:700;">[FECHAR]</button>
+    </div>
+
+    <!-- Área Principal: Tabuleiro + Colunas de Pistas -->
+    <main class="workspace-grid">
+      <!-- Coluna do Tabuleiro -->
+      <section class="board-panel" aria-label="Tabuleiro da Cruzadinha">
+        <!-- Barra da Pista Selecionada -->
+        <div class="active-clue-bar">
+          <div class="active-clue-meta">
+            <div class="active-clue-header">
+              <span id="active-clue-badge">03 · HORIZONTAL</span>
+              <span id="active-clue-len" class="active-clue-length">[16 LETRAS]</span>
+            </div>
+            <p id="active-clue-desc" class="active-clue-text">
+              Chip único que reúne processador, memória e periféricos para automação de sistemas embarcados.
+            </p>
+          </div>
+          <button id="btn-toggle-dir" class="btn-toggle-dir" type="button" title="Alternar entre Horizontal e Vertical">
+            Direção ⇄
+          </button>
+        </div>
+
+        <!-- Grade 18x17 -->
+        <div class="crossword-frame">
+          <div id="crossword-grid" class="crossword-grid" role="grid" aria-label="Grade 18 por 17"></div>
+        </div>
+
+        <!-- Legenda de Cores e Atalhos -->
+        <div class="board-legend">
+          <div class="legend-indicators">
+            <span class="legend-dot"><i style="background:#c8102e;"></i>Palavra Ativa</span>
+            <span class="legend-dot"><i style="background:#1ed760;"></i>Correta</span>
+            <span class="legend-dot"><i style="background:#e61938;"></i>Incorreta / Incompleta</span>
+          </div>
+          <span>SETAS: NAVEGAR · BACKSPACE: APAGAR · TAB: PRÓXIMA PISTA</span>
+        </div>
+      </section>
+
+      <!-- Coluna das Pistas (Horizontais e Verticais) -->
+      <aside class="clues-panel" aria-label="Lista de Pistas">
+        <div class="clue-group-card">
+          <div class="clue-group-header">
+            <h2 class="clue-group-title">
+              <span>→</span> HORIZONTAIS
+            </h2>
+            <span class="clue-group-count">6 TERMOS</span>
+          </div>
+          <ul id="clues-horizontal" class="clue-list"></ul>
+        </div>
+
+        <div class="clue-group-card">
+          <div class="clue-group-header">
+            <h2 class="clue-group-title">
+              <span>↓</span> VERTICAIS
+            </h2>
+            <span class="clue-group-count">8 TERMOS</span>
+          </div>
+          <ul id="clues-vertical" class="clue-list"></ul>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <!-- Modal de Vitória (Quando 14 de 14 palavras são acertadas) -->
+  <div id="victory-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="victory-title">
+    <div class="victory-modal">
+      <div class="victory-stamp">[ ✓ ] ENIGMA DECIFRADO</div>
+      <h2 id="victory-title">Protocolo Gotham Concluído</h2>
+      <p>
+        Excelente trabalho de investigação. Todos os <strong>14 conceitos de Arquitetura Computacional</strong> foram identificados e validados com precisão no tabuleiro.
+      </p>
+      <div class="victory-stats">
+        <div class="stat-box">
+          <strong>14 / 14</strong>
+          <span>Acertos</span>
+        </div>
+        <div class="stat-box">
+          <strong id="stat-time">00:00</strong>
+          <span>Tempo</span>
+        </div>
+        <div class="stat-box">
+          <strong id="stat-checks">1</strong>
+          <span>Verificações</span>
+        </div>
+      </div>
+      <div class="victory-actions">
+        <button id="btn-inspect-board" class="btn-tactical btn-reset" type="button">Analisar Tabuleiro</button>
+        <button id="btn-play-again" class="btn-tactical btn-check" type="button">Nova Investigação</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * ============================================================================
+     * CRUZADINHA DE ARQUITETURA COMPUTACIONAL — PROTOCOLO GOTHAM (2022 NOIR)
+     * Disciplina: Arquitetura Computacional · Sprint 3
+     * ============================================================================
+     */
+
+    // Dimensões exatas do tabuleiro (18 linhas x 17 colunas, indexadas a partir de 0)
+    const NUM_ROWS = 18;
+    const NUM_COLS = 17;
+
+    // Definição completa das 14 palavras cruzadas (6 Horizontais + 8 Verticais)
+    const WORDS_DATA = [
+      // HORIZONTAIS
+      {
+        id: '3H',
+        number: 3,
+        direction: 'H',
+        answer: 'MICROCONTROLADOR',
+        row: 4,
+        col: 0,
+        clue: 'Chip único que reúne processador, memória e periféricos para automação de sistemas embarcados.'
+      },
+      {
+        id: '8H',
+        number: 8,
+        direction: 'H',
+        answer: 'CPU',
+        row: 6,
+        col: 5,
+        clue: 'Principal componente do computador que interpreta instruções e coordena o processamento dos dados.'
+      },
+      {
+        id: '10H',
+        number: 10,
+        direction: 'H',
+        answer: 'QUADCORE',
+        row: 8,
+        col: 9,
+        clue: 'Processador equipado com quatro núcleos físicos independentes para executar tarefas simultâneas.'
+      },
+      {
+        id: '11H',
+        number: 11,
+        direction: 'H',
+        answer: 'ADDRESSBUS',
+        row: 10,
+        col: 0,
+        clue: 'Via unidirecional por onde o processador envia a localização exata na memória.'
+      },
+      {
+        id: '12H',
+        number: 12,
+        direction: 'H',
+        answer: 'DATABUS',
+        row: 12,
+        col: 3,
+        clue: 'Trilha bidirecional que transporta informações binárias entre processador, memória e periféricos.'
+      },
+      {
+        id: '13H',
+        number: 13,
+        direction: 'H',
+        answer: 'ROM',
+        row: 14,
+        col: 3,
+        clue: 'Memória não volátil gravada de fábrica que guarda o firmware inicial do sistema.'
+      },
+
+      // VERTICAIS
+      {
+        id: '1V',
+        number: 1,
+        direction: 'V',
+        answer: 'EEPROM',
+        row: 1,
+        col: 9,
+        clue: 'Memória não volátil que pode ser apagada e regravada eletricamente byte a byte.'
+      },
+      {
+        id: '2V',
+        number: 2,
+        direction: 'V',
+        answer: 'ULA',
+        row: 3,
+        col: 11,
+        clue: 'Circuito interno do processador responsável por realizar cálculos matemáticos e comparações booleanas.'
+      },
+      {
+        id: '3V',
+        number: 3,
+        direction: 'V',
+        answer: 'MEMORIADEMASSA',
+        row: 4,
+        col: 0,
+        clue: 'Armazenamento secundário permanente de alta capacidade, como discos rígidos e unidades de estado sólido.'
+      },
+      {
+        id: '4V',
+        number: 4,
+        direction: 'V',
+        answer: 'REGISTRADORES',
+        row: 4,
+        col: 3,
+        clue: 'Pequenas células ultrarrápidas dentro do processador que guardam operandos e instruções em execução.'
+      },
+      {
+        id: '5V',
+        number: 5,
+        direction: 'V',
+        answer: 'CACHE',
+        row: 4,
+        col: 5,
+        clue: 'Memória estática intermediária e veloz que reduz o tempo de busca junto ao processador.'
+      },
+      {
+        id: '6V',
+        number: 6,
+        direction: 'V',
+        answer: 'DUALCORE',
+        row: 4,
+        col: 13,
+        clue: 'Arquitetura de processador que possui exatamente dois núcleos de execução no mesmo chip.'
+      },
+      {
+        id: '7V',
+        number: 7,
+        direction: 'V',
+        answer: 'RAM',
+        row: 4,
+        col: 15,
+        clue: 'Memória principal volátil que guarda programas abertos e perde tudo ao desligar a energia.'
+      },
+      {
+        id: '9V',
+        number: 9,
+        direction: 'V',
+        answer: 'UC',
+        row: 6,
+        col: 7,
+        clue: 'Setor do processador que busca, decodifica instruções e emite sinais para sincronizar os componentes.'
+      }
+    ];
+
+    // Estado global da aplicação
+    const state = {
+      gridMap: [], // Matriz 18x17 contendo metadados de cada célula
+      activeWordId: '3H',
+      focusedCell: { row: 4, col: 0 },
+      wordStatus: {}, // 'pending' | 'correct' | 'wrong'
+      soundEnabled: true,
+      startTime: null,
+      checkCount: 0,
+      solvedCelebrated: false
+    };
+
+    // Referências de DOM
+    const dom = {
+      splashScreen: document.getElementById('splash-screen'),
+      btnStart: document.getElementById('btn-start'),
+      gridContainer: document.getElementById('crossword-grid'),
+      cluesH: document.getElementById('clues-horizontal'),
+      cluesV: document.getElementById('clues-vertical'),
+      activeBadge: document.getElementById('active-clue-badge'),
+      activeLen: document.getElementById('active-clue-len'),
+      activeDesc: document.getElementById('active-clue-desc'),
+      btnToggleDir: document.getElementById('btn-toggle-dir'),
+      scoreCounter: document.getElementById('score-counter'),
+      scoreSegments: document.getElementById('score-segments'),
+      btnCheck: document.getElementById('btn-check'),
+      btnReset: document.getElementById('btn-reset'),
+      btnSound: document.getElementById('btn-sound'),
+      btnDossier: document.getElementById('btn-dossier'),
+      statusBanner: document.getElementById('status-banner'),
+      statusText: document.getElementById('status-text'),
+      btnCloseBanner: document.getElementById('btn-close-banner'),
+      victoryModal: document.getElementById('victory-modal'),
+      statTime: document.getElementById('stat-time'),
+      statChecks: document.getElementById('stat-checks'),
+      btnInspectBoard: document.getElementById('btn-inspect-board'),
+      btnPlayAgain: document.getElementById('btn-play-again')
+    };
+
+    /* ==========================================================================
+       SINTETIZADOR DE ÁUDIO TÁTICO (WEB AUDIO API — SEM ARQUIVOS EXTERNOS)
+       ========================================================================== */
+    const SoundFX = (() => {
+      let ctx = null;
+
+      function getContext() {
+        if (!ctx) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (AudioCtx) ctx = new AudioCtx();
+        }
+        if (ctx && ctx.state === 'suspended') {
+          ctx.resume().catch(() => {});
+        }
+        return ctx;
+      }
+
+      function playTone(freq, type, duration, gainVal = 0.06, delay = 0) {
+        if (!state.soundEnabled) return;
+        const audioCtx = getContext();
+        if (!audioCtx) return;
+
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + delay);
+
+        gain.gain.setValueAtTime(0.0001, audioCtx.currentTime + delay);
+        gain.gain.exponentialRampToValueAtTime(gainVal, audioCtx.currentTime + delay + 0.012);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + delay + duration);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start(audioCtx.currentTime + delay);
+        osc.stop(audioCtx.currentTime + delay + duration + 0.02);
+      }
+
+      return {
+        typeKey() {
+          playTone(520, 'triangle', 0.045, 0.045);
+        },
+        deleteKey() {
+          playTone(260, 'sine', 0.05, 0.04);
+        },
+        selectWord() {
+          playTone(390, 'sine', 0.06, 0.035);
+        },
+        startProtocol() {
+          playTone(110, 'sawtooth', 0.45, 0.07, 0);
+          playTone(164.81, 'triangle', 0.55, 0.06, 0.08);
+        },
+        checkPartial() {
+          playTone(330, 'triangle', 0.14, 0.06, 0);
+          playTone(293.66, 'triangle', 0.18, 0.06, 0.11);
+        },
+        victory() {
+          playTone(261.63, 'triangle', 0.25, 0.07, 0);
+          playTone(329.63, 'triangle', 0.25, 0.07, 0.1);
+          playTone(392.00, 'triangle', 0.3, 0.07, 0.2);
+          playTone(523.25, 'triangle', 0.55, 0.08, 0.32);
+        }
+      };
+    })();
+
+    /* ==========================================================================
+       EFEITO VISUAL DE CHUVA NOIR (CANVAS 2D)
+       ========================================================================== */
+    function initRainEffect() {
+      const canvas = document.getElementById('rain-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+
+      let width = 0;
+      let height = 0;
+      let drops = [];
+
+      function resize() {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+        const count = Math.min(130, Math.floor(width / 12));
+        drops = Array.from({ length: count }, () => ({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          len: 14 + Math.random() * 22,
+          speed: 7 + Math.random() * 8,
+          alpha: 0.08 + Math.random() * 0.22
+        }));
+      }
+
+      window.addEventListener('resize', resize);
+      resize();
+
+      function animate() {
+        ctx.clearRect(0, 0, width, height);
+        ctx.lineWidth = 1;
+
+        for (let i = 0; i < drops.length; i++) {
+          const d = drops[i];
+          ctx.strokeStyle = `rgba(180, 195, 220, ${d.alpha})`;
+          ctx.beginPath();
+          ctx.moveTo(d.x, d.y);
+          ctx.lineTo(d.x - 2.2, d.y + d.len);
+          ctx.stroke();
+
+          d.y += d.speed;
+          d.x -= 0.9;
+
+          if (d.y > height) {
+            d.y = -d.len;
+            d.x = Math.random() * (width + 40);
+          }
+        }
+        requestAnimationFrame(animate);
+      }
+
+      animate();
+    }
+
+    /* ==========================================================================
+       CONSTRUÇÃO DA MATRIZ LÓGICA E RENDERIZAÇÃO DO TABULEIRO
+       ========================================================================== */
+    function buildGridStructure() {
+      // Inicializa matriz 18x17 vazia
+      state.gridMap = Array.from({ length: NUM_ROWS }, (_, r) =>
+        Array.from({ length: NUM_COLS }, (_, c) => ({
+          row: r,
+          col: c,
+          active: false,
+          expectedChar: '',
+          clueNumber: null,
+          words: [], // IDs das palavras que passam por esta célula
+          element: null,
+          input: null
+        }))
+      );
+
+      // Mapeia cada uma das 14 palavras nas respectivas células
+      WORDS_DATA.forEach((wordObj) => {
+        state.wordStatus[wordObj.id] = 'pending';
+
+        for (let i = 0; i < wordObj.answer.length; i++) {
+          const r = wordObj.direction === 'H' ? wordObj.row : wordObj.row + i;
+          const c = wordObj.direction === 'H' ? wordObj.col + i : wordObj.col;
+          const cell = state.gridMap[r][c];
+
+          cell.active = true;
+          cell.expectedChar = wordObj.answer[i];
+          if (!cell.words.includes(wordObj.id)) {
+            cell.words.push(wordObj.id);
+          }
+          if (i === 0) {
+            cell.clueNumber = wordObj.number;
+          }
+        }
+      });
+    }
+
+    function renderGrid() {
+      dom.gridContainer.innerHTML = '';
+
+      for (let r = 0; r < NUM_ROWS; r++) {
+        for (let c = 0; c < NUM_COLS; c++) {
+          const cellData = state.gridMap[r][c];
+
+          if (!cellData.active) {
+            const voidDiv = document.createElement('div');
+            voidDiv.className = 'grid-cell-void';
+            voidDiv.setAttribute('aria-hidden', 'true');
+            dom.gridContainer.appendChild(voidDiv);
+            continue;
+          }
+
+          const cellDiv = document.createElement('div');
+          cellDiv.className = 'grid-cell-active';
+          cellDiv.dataset.row = r;
+          cellDiv.dataset.col = c;
+
+          if (cellData.clueNumber !== null) {
+            const numSpan = document.createElement('span');
+            numSpan.className = 'cell-number';
+            numSpan.textContent = cellData.clueNumber;
+            cellDiv.appendChild(numSpan);
+          }
+
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.maxLength = 2; // Permite capturar sobrescrita fluida de 1 letra
+          input.className = 'cell-input';
+          input.autocomplete = 'off';
+          input.autocorrect = 'off';
+          input.autocapitalize = 'characters';
+          input.spellcheck = false;
+          input.setAttribute('aria-label', `Linha ${r + 1}, Coluna ${c + 1}`);
+          input.dataset.row = r;
+          input.dataset.col = c;
+
+          // Eventos de mouse/toque e teclado
+          input.addEventListener('mousedown', (e) => handleCellMouseDown(e, r, c));
+          input.addEventListener('focus', () => handleCellFocus(r, c));
+          input.addEventListener('input', (e) => handleCellInput(e, r, c));
+          input.addEventListener('keydown', (e) => handleCellKeyDown(e, r, c));
+
+          cellDiv.appendChild(input);
+          dom.gridContainer.appendChild(cellDiv);
+
+          cellData.element = cellDiv;
+          cellData.input = input;
+        }
+      }
+    }
+
+    function renderClues() {
+      dom.cluesH.innerHTML = '';
+      dom.cluesV.innerHTML = '';
+
+      WORDS_DATA.forEach((wordObj) => {
+        const li = document.createElement('li');
+        li.className = 'clue-item';
+        li.dataset.wordId = wordObj.id;
+
+        const numBadge = document.createElement('span');
+        numBadge.className = 'clue-num-badge';
+        numBadge.textContent = String(wordObj.number).padStart(2, '0') + '.';
+
+        const textSpan = document.createElement('span');
+        textSpan.className = 'clue-text';
+        textSpan.textContent = wordObj.clue;
+
+        const statusTag = document.createElement('span');
+        statusTag.className = 'clue-status-tag';
+        statusTag.textContent = `${wordObj.answer.length}L`;
+
+        li.appendChild(numBadge);
+        li.appendChild(textSpan);
+        li.appendChild(statusTag);
+
+        li.addEventListener('click', () => {
+          selectWordById(wordObj.id, true);
+          SoundFX.selectWord();
+        });
+
+        if (wordObj.direction === 'H') {
+          dom.cluesH.appendChild(li);
+        } else {
+          dom.cluesV.appendChild(li);
+        }
+      });
+    }
+
+    function renderScoreSegments() {
+      dom.scoreSegments.innerHTML = '';
+      for (let i = 0; i < WORDS_DATA.length; i++) {
+        const seg = document.createElement('div');
+        seg.className = 'score-seg';
+        dom.scoreSegments.appendChild(seg);
+      }
+    }
+
+    /* ==========================================================================
+       NAVEGAÇÃO, SELEÇÃO DE PALAVRAS E INTERAÇÕES NO TABULEIRO
+       ========================================================================== */
+    function getWordById(wordId) {
+      return WORDS_DATA.find((w) => w.id === wordId) || WORDS_DATA[0];
+    }
+
+    function getWordCells(wordObj) {
+      const cells = [];
+      for (let i = 0; i < wordObj.answer.length; i++) {
+        const r = wordObj.direction === 'H' ? wordObj.row : wordObj.row + i;
+        const c = wordObj.direction === 'H' ? wordObj.col + i : wordObj.col;
+        cells.push(state.gridMap[r][c]);
+      }
+      return cells;
+    }
+
+    /**
+     * Ao clicar em uma célula já focada que pertence a duas palavras (interseção),
+     * alterna automaticamente entre Horizontal e Vertical.
+     */
+    function handleCellMouseDown(e, row, col) {
+      const cell = state.gridMap[row][col];
+      if (!cell || !cell.active) return;
+
+      const isAlreadyFocused =
+        state.focusedCell.row === row && state.focusedCell.col === col;
+
+      if (isAlreadyFocused && cell.words.length > 1) {
+        const otherWordId = cell.words.find((id) => id !== state.activeWordId);
+        if (otherWordId) {
+          state.activeWordId = otherWordId;
+          updateHighlights();
+          SoundFX.selectWord();
+        }
+      }
+    }
+
+    function handleCellFocus(row, col) {
+      const cell = state.gridMap[row][col];
+      if (!cell || !cell.active) return;
+
+      state.focusedCell = { row, col };
+
+      // Se a célula não pertence à palavra atualmente ativa, escolhe uma palavra válida
+      if (!cell.words.includes(state.activeWordId)) {
+        const currentWord = getWordById(state.activeWordId);
+        // Tenta manter a mesma direção se existir uma palavra nessa direção
+        const sameDirWord = cell.words
+          .map(getWordById)
+          .find((w) => w.direction === currentWord.direction);
+        state.activeWordId = sameDirWord ? sameDirWord.id : cell.words[0];
+      }
+
+      updateHighlights();
+    }
+
+    function selectWordById(wordId, focusFirstEmpty = false) {
+      const wordObj = getWordById(wordId);
+      state.activeWordId = wordObj.id;
+
+      const cells = getWordCells(wordObj);
+      let targetCell = cells[0];
+
+      if (focusFirstEmpty) {
+        const firstEmpty = cells.find((c) => !c.input.value);
+        if (firstEmpty) targetCell = firstEmpty;
+      }
+
+      state.focusedCell = { row: targetCell.row, col: targetCell.col };
+      updateHighlights();
+
+      if (targetCell.input) {
+        targetCell.input.focus();
+      }
+    }
+
+    function toggleDirectionAtFocusedCell() {
+      const { row, col } = state.focusedCell;
+      const cell = state.gridMap[row]?.[col];
+      if (!cell) return;
+
+      if (cell.words.length > 1) {
+        const nextWordId = cell.words.find((id) => id !== state.activeWordId);
+        if (nextWordId) {
+          state.activeWordId = nextWordId;
+          updateHighlights();
+          SoundFX.selectWord();
+          cell.input?.focus();
+        }
+      } else {
+        showBanner('Esta casa pertence apenas a uma direção.', 'info');
+      }
+    }
+
+    /**
+     * Normaliza caracteres digitados para maiúsculas A-Z sem acento
+     */
+    function sanitizeLetter(raw) {
+      if (!raw) return '';
+      const normalized = raw
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toUpperCase()
+        .replace(/[^A-Z]/g, '');
+      return normalized.slice(-1);
+    }
+
+    function handleCellInput(e, row, col) {
+      const cell = state.gridMap[row][col];
+      const letter = sanitizeLetter(e.target.value);
+
+      e.target.value = letter;
+
+      if (letter) {
+        // Remove marcação visual de erro ao editar a célula
+        cell.element.classList.remove('cell-wrong');
+        SoundFX.typeKey();
+        moveToNextCellInWord(row, col);
+      }
+    }
+
+    function handleCellKeyDown(e, row, col) {
+      const cell = state.gridMap[row][col];
+      const activeWord = getWordById(state.activeWordId);
+
+      if (e.key === 'Backspace') {
+        e.preventDefault();
+        cell.element.classList.remove('cell-wrong');
+
+        if (cell.input.value !== '') {
+          cell.input.value = '';
+          SoundFX.deleteKey();
+        } else {
+          moveToPrevCellInWord(row, col, true);
+        }
+        return;
+      }
+
+      if (e.key === 'Delete') {
+        e.preventDefault();
+        cell.input.value = '';
+        cell.element.classList.remove('cell-wrong');
+        SoundFX.deleteKey();
+        return;
+      }
+
+      // Navegação por setas do teclado
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+        e.preventDefault();
+        navigateByArrow(e.key, row, col);
+        return;
+      }
+
+      // Tab ou Enter avança para a próxima palavra da lista
+      if (e.key === 'Tab' || e.key === 'Enter') {
+        e.preventDefault();
+        const idx = WORDS_DATA.findIndex((w) => w.id === activeWord.id);
+        const nextIdx = e.shiftKey
+          ? (idx - 1 + WORDS_DATA.length) % WORDS_DATA.length
+          : (idx + 1) % WORDS_DATA.length;
+        selectWordById(WORDS_DATA[nextIdx].id, true);
+        SoundFX.selectWord();
+      }
+    }
+
+    function moveToNextCellInWord(row, col) {
+      const wordObj = getWordById(state.activeWordId);
+      const cells = getWordCells(wordObj);
+      const currentIndex = cells.findIndex((c) => c.row === row && c.col === col);
+
+      if (currentIndex >= 0 && currentIndex < cells.length - 1) {
+        const nextCell = cells[currentIndex + 1];
+        nextCell.input.focus();
+      }
+    }
+
+    function moveToPrevCellInWord(row, col, clearTarget = false) {
+      const wordObj = getWordById(state.activeWordId);
+      const cells = getWordCells(wordObj);
+      const currentIndex = cells.findIndex((c) => c.row === row && c.col === col);
+
+      if (currentIndex > 0) {
+        const prevCell = cells[currentIndex - 1];
+        if (clearTarget) {
+          prevCell.input.value = '';
+          prevCell.element.classList.remove('cell-wrong');
+          SoundFX.deleteKey();
+        }
+        prevCell.input.focus();
+      }
+    }
+
+    function navigateByArrow(key, startRow, startCol) {
+      const deltas = {
+        ArrowUp: [-1, 0],
+        ArrowDown: [1, 0],
+        ArrowLeft: [0, -1],
+        ArrowRight: [0, 1]
+      };
+      const [dr, dc] = deltas[key];
+      let r = startRow + dr;
+      let c = startCol + dc;
+
+      while (r >= 0 && r < NUM_ROWS && c >= 0 && c < NUM_COLS) {
+        const candidate = state.gridMap[r][c];
+        if (candidate && candidate.active) {
+          // Ajusta direção ativa para acompanhar o eixo da seta se possível
+          const desiredDir = dr !== 0 ? 'V' : 'H';
+          const matchingWord = candidate.words
+            .map(getWordById)
+            .find((w) => w.direction === desiredDir);
+          if (matchingWord) {
+            state.activeWordId = matchingWord.id;
+          }
+          candidate.input.focus();
+          return;
+        }
+        r += dr;
+        c += dc;
+      }
+    }
+
+    /* ==========================================================================
+       ATUALIZAÇÃO DE DESTAQUES VISUAIS (TABULEIRO + PISTAS + BARRA ATIVA)
+       ========================================================================== */
+    function updateHighlights() {
+      const activeWord = getWordById(state.activeWordId);
+      const activeCells = getWordCells(activeWord);
+
+      // Limpa classes de foco/destaque anteriores
+      for (let r = 0; r < NUM_ROWS; r++) {
+        for (let c = 0; c < NUM_COLS; c++) {
+          const cell = state.gridMap[r][c];
+          if (cell.active && cell.element) {
+            cell.element.classList.remove('word-highlight', 'cell-focused');
+          }
+        }
+      }
+
+      // Aplica destaque na palavra ativa
+      activeCells.forEach((cell) => {
+        cell.element.classList.add('word-highlight');
+      });
+
+      // Aplica destaque intenso na célula focada
+      const focused = state.gridMap[state.focusedCell.row]?.[state.focusedCell.col];
+      if (focused && focused.active && focused.element) {
+        focused.element.classList.add('cell-focused');
+      }
+
+      // Atualiza barra da pista ativa acima do tabuleiro
+      const dirLabel = activeWord.direction === 'H' ? 'HORIZONTAL' : 'VERTICAL';
+      dom.activeBadge.textContent = `${String(activeWord.number).padStart(2, '0')} · ${dirLabel}`;
+      dom.activeLen.textContent = `[${activeWord.answer.length} LETRAS]`;
+      dom.activeDesc.textContent = activeWord.clue;
+
+      // Atualiza destaque na lista de pistas
+      document.querySelectorAll('.clue-item').forEach((item) => {
+        item.classList.toggle('active-clue', item.dataset.wordId === activeWord.id);
+      });
+    }
+
+    /* ==========================================================================
+       VERIFICAÇÃO (CONFERIR) E REINÍCIO (REINICIAR)
+       ========================================================================== */
+    function checkAllWords() {
+      state.checkCount += 1;
+
+      // Primeiro remove marcas antigas de validação das células
+      for (let r = 0; r < NUM_ROWS; r++) {
+        for (let c = 0; c < NUM_COLS; c++) {
+          const cell = state.gridMap[r][c];
+          if (cell.active && cell.element) {
+            cell.element.classList.remove('cell-correct', 'cell-wrong');
+          }
+        }
+      }
+
+      let correctCount = 0;
+      const correctCellsSet = new Set();
+      const wrongCellsSet = new Set();
+
+      WORDS_DATA.forEach((wordObj) => {
+        const cells = getWordCells(wordObj);
+        const typedWord = cells.map((c) => c.input.value || '').join('');
+        const isCorrect = typedWord === wordObj.answer;
+
+        if (isCorrect) {
+          correctCount += 1;
+          state.wordStatus[wordObj.id] = 'correct';
+          cells.forEach((c) => correctCellsSet.add(`${c.row},${c.col}`));
+        } else {
+          state.wordStatus[wordObj.id] = 'wrong';
+          cells.forEach((c) => wrongCellsSet.add(`${c.row},${c.col}`));
+        }
+      });
+
+      // Aplica cores nas células:
+      // Células de palavras corretas ficam verdes (mesmo se cruzarem com palavra incompleta);
+      // Células pertencentes apenas a palavras incorretas/incompletas ficam vermelhas.
+      for (let r = 0; r < NUM_ROWS; r++) {
+        for (let c = 0; c < NUM_COLS; c++) {
+          const cell = state.gridMap[r][c];
+          if (!cell.active) continue;
+
+          const key = `${r},${c}`;
+          if (correctCellsSet.has(key)) {
+            cell.element.classList.add('cell-correct');
+          } else if (wrongCellsSet.has(key)) {
+            cell.element.classList.add('cell-wrong');
+          }
+        }
+      }
+
+      // Atualiza estado visual dos itens na lista de pistas
+      document.querySelectorAll('.clue-item').forEach((item) => {
+        const wId = item.dataset.wordId;
+        const wordObj = getWordById(wId);
+        const status = state.wordStatus[wId];
+        const tag = item.querySelector('.clue-status-tag');
+
+        item.classList.remove('solved-clue', 'wrong-clue');
+        if (status === 'correct') {
+          item.classList.add('solved-clue');
+          tag.textContent = '[ ✓ ]';
+        } else if (status === 'wrong') {
+          item.classList.add('wrong-clue');
+          tag.textContent = `${wordObj.answer.length}L · !`;
+        }
+      });
+
+      // Atualiza contador de acertos no formato exigido: "X de 14 palavras"
+      updateScoreDisplay(correctCount);
+
+      if (correctCount === WORDS_DATA.length) {
+        SoundFX.victory();
+        showBanner(
+          `PROTOCOLO DECIFRADO: ${correctCount} de 14 palavras corretas! Todas as evidências foram confirmadas.`,
+          'victory'
+        );
+        openVictoryModal();
+      } else {
+        SoundFX.checkPartial();
+        const remaining = WORDS_DATA.length - correctCount;
+        showBanner(
+          `ANÁLISE CONCLUÍDA: ${correctCount} de 14 palavras corretas. Restam ${remaining} termo(s) para decifrar.`,
+          'info'
+        );
+      }
+    }
+
+    function updateScoreDisplay(correctCount) {
+      dom.scoreCounter.textContent = `${correctCount} de ${WORDS_DATA.length} palavras`;
+      dom.scoreCounter.classList.toggle('all-solved', correctCount === WORDS_DATA.length);
+
+      const segments = dom.scoreSegments.querySelectorAll('.score-seg');
+      segments.forEach((seg, idx) => {
+        seg.classList.toggle('filled', idx < correctCount);
+      });
+    }
+
+    function resetBoard() {
+      for (let r = 0; r < NUM_ROWS; r++) {
+        for (let c = 0; c < NUM_COLS; c++) {
+          const cell = state.gridMap[r][c];
+          if (cell.active) {
+            cell.input.value = '';
+            cell.element.classList.remove('cell-correct', 'cell-wrong');
+          }
+        }
+      }
+
+      WORDS_DATA.forEach((wordObj) => {
+        state.wordStatus[wordObj.id] = 'pending';
+      });
+
+      document.querySelectorAll('.clue-item').forEach((item) => {
+        const wordObj = getWordById(item.dataset.wordId);
+        item.classList.remove('solved-clue', 'wrong-clue');
+        const tag = item.querySelector('.clue-status-tag');
+        if (tag) tag.textContent = `${wordObj.answer.length}L`;
+      });
+
+      state.checkCount = 0;
+      state.startTime = Date.now();
+      state.solvedCelebrated = false;
+
+      updateScoreDisplay(0);
+      dom.victoryModal.classList.remove('open');
+      showBanner('TABULEIRO REINICIADO // Todas as casas foram limpas.', 'info');
+      selectWordById('3H', false);
+      SoundFX.deleteKey();
+    }
+
+    /* ==========================================================================
+       BANNERS E MODAIS DE INTERFACE
+       ========================================================================== */
+    function showBanner(message, type = 'info') {
+      dom.statusText.textContent = message;
+      dom.statusBanner.className = `status-banner visible ${type}`;
+    }
+
+    function hideBanner() {
+      dom.statusBanner.classList.remove('visible');
+    }
+
+    function formatElapsedTime() {
+      if (!state.startTime) return '00:00';
+      const totalSeconds = Math.max(1, Math.floor((Date.now() - state.startTime) / 1000));
+      const mins = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
+      const secs = String(totalSeconds % 60).padStart(2, '0');
+      return `${mins}:${secs}`;
+    }
+
+    function openVictoryModal() {
+      dom.statTime.textContent = formatElapsedTime();
+      dom.statChecks.textContent = String(state.checkCount);
+      dom.victoryModal.classList.add('open');
+    }
+
+    /* ==========================================================================
+       INICIALIZAÇÃO E BINDING DE EVENTOS
+       ========================================================================== */
+    function init() {
+      initRainEffect();
+      buildGridStructure();
+      renderGrid();
+      renderClues();
+      renderScoreSegments();
+      updateScoreDisplay(0);
+
+      // Seleciona palavra inicial (3 Horizontal - MICROCONTROLADOR) sem roubar foco antes do splash
+      state.activeWordId = '3H';
+      state.focusedCell = { row: 4, col: 0 };
+      updateHighlights();
+
+      // Botão da Tela Inicial ("INICIAR INVESTIGAÇÃO")
+      dom.btnStart.addEventListener('click', () => {
+        dom.splashScreen.classList.add('hidden-splash');
+        if (!state.startTime) state.startTime = Date.now();
+        SoundFX.startProtocol();
+        setTimeout(() => {
+          selectWordById('3H', true);
+        }, 250);
+      });
+
+      // Reabrir Dossiê Inicial
+      dom.btnDossier.addEventListener('click', () => {
+        dom.splashScreen.classList.remove('hidden-splash');
+      });
+
+      // Botões Táticos Principais
+      dom.btnCheck.addEventListener('click', checkAllWords);
+      dom.btnReset.addEventListener('click', resetBoard);
+      dom.btnToggleDir.addEventListener('click', toggleDirectionAtFocusedCell);
+      dom.btnCloseBanner.addEventListener('click', hideBanner);
+
+      // Alternar Áudio
+      dom.btnSound.addEventListener('click', () => {
+        state.soundEnabled = !state.soundEnabled;
+        dom.btnSound.textContent = state.soundEnabled ? '🔊' : '🔇';
+        if (state.soundEnabled) SoundFX.selectWord();
+      });
+
+      // Ações do Modal de Vitória
+      dom.btnInspectBoard.addEventListener('click', () => {
+        dom.victoryModal.classList.remove('open');
+      });
+
+      dom.btnPlayAgain.addEventListener('click', () => {
+        resetBoard();
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
